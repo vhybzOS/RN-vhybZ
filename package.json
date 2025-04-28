@@ -83,6 +83,7 @@
     "react-native-svg": "14.1.0",
     "react-native-tab-view": "^3.5.2",
     "react-native-web": "~0.19.6",
+    "react-native-webview": "13.6.4",
     "realm": "^12.7.1"
   },
   "devDependencies": {

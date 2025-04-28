@@ -1,9 +1,12 @@
 import React, { FC } from "react"
 import { observer } from "mobx-react-lite"
 import { AppStackScreenProps } from "app/navigators"
-import { View, ViewStyle } from "react-native"
+import { View, ViewStyle, Text } from "react-native"
 import { Chip, Icon, Button, useTheme, FAB, Menu, Appbar, List, Divider } from "react-native-paper"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
+import { ChatInput } from "app/components"
+import { tw } from "app/theme/tailwind"
+import { WebView } from 'react-native-webview';
 // import { useNavigation } from "@react-navigation/native"
 // import { useStores } from "app/models"
 
@@ -21,8 +24,8 @@ export const StudioScreen: FC<StudioScreenProps> = observer(function StudioScree
       <Appbar mode="small" safeAreaInsets={{ top: safeArea.top }}>
         <Appbar.Content
           // titleStyle={{ fontSize: 16 }}
-          mode="small"
-          title={"hello"}
+          // mode="small"
+          title={"Studio"}
         />
         {/* <Appbar.Action icon={"printer"} onPress={handlePrint} /> */}
         {/* <Appbar.Action */}
@@ -32,6 +35,17 @@ export const StudioScreen: FC<StudioScreenProps> = observer(function StudioScree
         {/*   }} */}
         {/* /> */}
       </Appbar>
+      <View style={[tw.flex,tw.pb10,tw.pl5, tw.pr5]}>
+        <WebView
+          source={{ uri: 'https://expo.dev' }}
+        />
+      </View>
+      <View style={[tw.flexNone, tw.flexRow, tw.justifyAround]}>
+        <Chip mode="outlined">Text</Chip>
+        <Chip mode="outlined">Voice</Chip>
+        <Chip mode="outlined">Camera</Chip>
+      </View>
+      <ChatInput></ChatInput>
     </>
   )
 })
@@ -39,3 +53,4 @@ export const StudioScreen: FC<StudioScreenProps> = observer(function StudioScree
 const $root: ViewStyle = {
   flex: 1,
 }
+

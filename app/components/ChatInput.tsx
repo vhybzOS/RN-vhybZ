@@ -1,8 +1,10 @@
 import * as React from "react"
-import { StyleProp, TextStyle, View, ViewStyle } from "react-native"
+import { Button, StyleProp, TextInput, TextStyle, View, ViewStyle } from "react-native"
 import { observer } from "mobx-react-lite"
 import { colors, typography } from "app/theme"
 import { Text } from "app/components/Text"
+import { IconButton } from "react-native-paper"
+import { tw } from "app/theme/tailwind"
 
 export interface ChatInputProps {
   /**
@@ -19,8 +21,15 @@ export const ChatInput = observer(function ChatInput(props: ChatInputProps) {
   const $styles = [$container, style]
 
   return (
-    <View style={$styles}>
-      <Text style={$text}>Hello</Text>
+    <View style={[tw.flexNone, tw.flexRow]}>
+      <TextInput numberOfLines={3} multiline style={[
+        tw.flex,
+        tw.bgGray300,
+        tw.p10,
+        tw.m5,
+        tw.rounded,
+        { height: 100, textAlignVertical: 'top' }]}></TextInput>
+      <IconButton icon="send"></IconButton>
     </View>
   )
 })
