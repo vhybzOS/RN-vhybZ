@@ -9,21 +9,16 @@ import { ApiResponse, ApisauceInstance, create } from "apisauce"
 import Config from "../../config"
 import { GeneralApiProblem, getGeneralApiProblem } from "./apiProblem"
 import type { ApiConfig, ApiFeedResponse } from "./api.types"
-import { SpendFormStoreSnapshotIn } from "app/models"
-import { addMonths, newDate } from "date-fns-jalali"
-
-type SpendPart = Partial<SpendFormStoreSnapshotIn>
-interface GPTSpendPart extends Omit<SpendPart, "doneAt"> {
-  doneAt?: [number, number, number, number, number, number]
-}
 
 /**
  * Configuring the apisauce instance.
  */
 export const DEFAULT_API_CONFIG: ApiConfig = {
   url: Config.API_URL,
-  timeout: 10000,
+  timeout: 100000,
   apiKey: Config.API_KEY,
+  apiVersion: Config.API_VERSION,
+  model: Config.MODEL
 }
 
 /**
@@ -40,8 +35,11 @@ export class Api {
   constructor(config: ApiConfig = DEFAULT_API_CONFIG) {
     this.config = config
     this.apisauce = create({
-      baseURL: this.config.url,
+      baseURL: `${this.config.url}/${this.config.model}`,
       timeout: this.config.timeout,
+      params: {
+        "api-version": config.apiVersion,
+      },
       headers: {
         "api-key": config.apiKey,
         Accept: "application/json",
@@ -49,27 +47,37 @@ export class Api {
     })
   }
 
-  async autoTitle(
+  async makeThreeJsGame(
     text: string,
-  ): Promise<{ extracted: { title: string, category: string }; kind: "ok" } | GeneralApiProblem> {
+  ): Promise<{  html: string, content: string , kind: "ok" } | GeneralApiProblem> {
+    console.log("makeThreeJsGame", text)
     // make the api call
     const messages = [
       {
         role: "system",
-        content: `You are a knowledgeable assistant specialized in naming and categorizing text note of clients for better access. you work at construction site and recored event throw notes.
-you always format output to JSON with keys for a title for the text and category for the text. please follow these rules:
-- if text is unclear return a  empty JSON
-- title should be short and clear
-- response language should be same as text
-
-
-      text:
-       ${text || ""}`,
+        content: 
+`you are the best software engineer that exist, base on user request create a html.
+response example:
+\`\`\`html
+<!doctype html>
+<html>
+  <head>
+    <title>This is the title of the webpage!</title>
+  </head>
+  <body>
+    <p>This is an example paragraph. Anything in the <strong>body</strong> tag will appear on the page, just like this <strong>p</strong> tag and its contents.</p>
+  </body>
+</html>
+\`\`\``
       },
+      {
+        role: "user",
+        content: text,
+      }
     ]
 
     const response: ApiResponse<ApiFeedResponse> = await this.apisauce.post(
-      `completions?api-version=2024-02-15-preview`,
+      `chat/completions`,
       {
         messages: messages,
         temperature: 0.6,
@@ -81,6 +89,7 @@ you always format output to JSON with keys for a title for the text and category
       },
     )
 
+    console.log("response", response)
     // the typical ways to die when calling an api
     if (!response.ok) {
       const problem = getGeneralApiProblem(response)
@@ -91,90 +100,28 @@ you always format output to JSON with keys for a title for the text and category
     try {
       const rawData = (response.data as any).choices[0].message.content
       console.log(rawData)
+      let htmlStr = ""
 
       // This is where we transform the data into the shape we expect for our MST model.
-      const extracted = JSON.parse(rawData) as GPTSpendPart
-      let doneAt
-      let amount
-      if (extracted.doneAt) {
-        doneAt = addMonths(newDate(...extracted.doneAt), -1)
+      const htmlMatch = rawData.match(/```html([\s\S]*?)```/);
+      if (htmlMatch && htmlMatch[1]) {
+          htmlStr = htmlMatch[1].trim();
+          console.log(htmlStr);
+      } else {
+          console.log("No HTML code block found.");
       }
-      if (extracted.amount) {
-        amount = Number(extracted.amount)
-      }
-      return { kind: "ok", extracted: { ...extracted, doneAt, amount } }
+
+      return { kind: "ok", html: htmlStr, content: rawData }
     } catch (e) {
       if (__DEV__ && e instanceof Error) {
         console.error(`Bad data: ${e.message}\n${response.data}`, e.stack)
       }
+      console.log(response.data)
       return { kind: "bad-data" }
     }
   }
 
-  /**
-   * Gets a list of recent React Native Radio episodes.
-   */
-  async extractInfo(
-    text: string,
-  ): Promise<{ extracted: SpendPart; kind: "ok" } | GeneralApiProblem> {
-    // make the api call
-    const messages = [
-      {
-        role: "system",
-        content: `You are a knowledgeable assistant specialized in 
-      analyzing and bank receipt or report texts. Extract key information in JSON 
-      format with keys 'trackingNum', 'doneAt', 'recipient', 'accountNum','paymentMethod', amount as number 'amount' . If
-      certain information is not available, return null for the key.
-      values are string or number except doneAt.
-      paymentMethod is how money transferred and can be if انتقال کارت به کارت :'ctc' OR انتقال پایا : 'paya' OR انتقال ساتنا : 'satna' OR (انواع خرید کالا یا خدمات) : 'pos' OR انتقال سپرده به سپرده : 'sts' OR any other method : 'other' .
-      doneAt is a hejri shamsi time and may not be available if available convert it to array of [year,month,day,hours,minutes,seconds] .
-      accountNum is card (کارت) or sheba (شبا) or account number (شماره حساب) of the recipient (destination) .
-      text:
-       ${text || ""}`,
-      },
-    ]
 
-    const response: ApiResponse<ApiFeedResponse> = await this.apisauce.post(
-      `completions?api-version=2024-02-15-preview`,
-      {
-        messages: messages,
-        temperature: 0.6,
-        max_tokens: 800,
-        top_p: 0.95,
-        frequency_penalty: 0,
-        presence_penalty: 0,
-        stop: null,
-      },
-    )
-
-    // the typical ways to die when calling an api
-    if (!response.ok) {
-      const problem = getGeneralApiProblem(response)
-      if (problem) return problem
-    }
-
-    // transform the data into the format we are expecting
-    try {
-      const rawData = (response.data as any).choices[0].message.content
-
-      // This is where we transform the data into the shape we expect for our MST model.
-      const extracted = JSON.parse(rawData) as GPTSpendPart
-      let doneAt
-      let amount
-      if (extracted.doneAt) {
-        doneAt = addMonths(newDate(...extracted.doneAt), -1)
-      }
-      if (extracted.amount) {
-        amount = Number(extracted.amount)
-      }
-      return { kind: "ok", extracted: { ...extracted, doneAt, amount } }
-    } catch (e) {
-      if (__DEV__ && e instanceof Error) {
-        console.error(`Bad data: ${e.message}\n${response.data}`, e.stack)
-      }
-      return { kind: "bad-data" }
-    }
-  }
 }
 
 // Singleton instance of the API for convenience

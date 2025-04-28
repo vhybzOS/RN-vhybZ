@@ -1,12 +1,15 @@
 import * as React from "react"
-import { Button, StyleProp, TextInput, TextStyle, View, ViewStyle } from "react-native"
+import { StyleProp, TextInput, TextStyle, View, ViewStyle } from "react-native"
 import { observer } from "mobx-react-lite"
 import { colors, typography } from "app/theme"
-import { Text } from "app/components/Text"
 import { IconButton } from "react-native-paper"
 import { tw } from "app/theme/tailwind"
 
 export interface ChatInputProps {
+  text: string
+  onTextChange: (s: string) => void
+  onSendPress: ()=>void
+  loading: boolean
   /**
    * An optional style override useful for padding & margin.
    */
@@ -21,15 +24,15 @@ export const ChatInput = observer(function ChatInput(props: ChatInputProps) {
   const $styles = [$container, style]
 
   return (
-    <View style={[tw.flexNone, tw.flexRow]}>
-      <TextInput numberOfLines={3} multiline style={[
+    <View style={[tw.flexNone, tw.flexRow, $styles]}>
+      <TextInput onChangeText={props.onTextChange} value={props.text} numberOfLines={3} multiline style={[
         tw.flex,
         tw.bgGray300,
         tw.p10,
         tw.m5,
         tw.rounded,
         { height: 100, textAlignVertical: 'top' }]}></TextInput>
-      <IconButton icon="send"></IconButton>
+      <IconButton icon="send" onPress={props.onSendPress}></IconButton>
     </View>
   )
 })

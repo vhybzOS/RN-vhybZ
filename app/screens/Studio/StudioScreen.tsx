@@ -8,13 +8,13 @@ import { ChatInput } from "app/components"
 import { tw } from "app/theme/tailwind"
 import { WebView } from 'react-native-webview';
 // import { useNavigation } from "@react-navigation/native"
-// import { useStores } from "app/models"
+import { useStores } from "app/models"
 
 interface StudioScreenProps extends AppStackScreenProps<"Studio"> { }
 
 export const StudioScreen: FC<StudioScreenProps> = observer(function StudioScreen() {
   // Pull in one of our MST stores
-  // const { someStore, anotherStore } = useStores()
+  const { studioStore: {textInput, setProp, loading, callAgent, html} } = useStores()
 
   // Pull in navigation via hook
   // const navigation = useNavigation()
@@ -37,7 +37,7 @@ export const StudioScreen: FC<StudioScreenProps> = observer(function StudioScree
       </Appbar>
       <View style={[tw.flex,tw.pb10,tw.pl5, tw.pr5]}>
         <WebView
-          source={{ uri: 'https://expo.dev' }}
+          source={html?{html:html} :{ uri: 'https://expo.dev' }}
         />
       </View>
       <View style={[tw.flexNone, tw.flexRow, tw.justifyAround]}>
@@ -45,7 +45,7 @@ export const StudioScreen: FC<StudioScreenProps> = observer(function StudioScree
         <Chip mode="outlined">Voice</Chip>
         <Chip mode="outlined">Camera</Chip>
       </View>
-      <ChatInput></ChatInput>
+      <ChatInput text={textInput} loading={loading} onTextChange={(val)=>{setProp("textInput",val)}} onSendPress={callAgent}></ChatInput>
     </>
   )
 })
