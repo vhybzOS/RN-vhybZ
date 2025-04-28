@@ -18,18 +18,33 @@ export const StudioStoreModel = types
   .actions(withSetPropAction)
   .views((self) => ({})) // eslint-disable-line @typescript-eslint/no-unused-vars
   .actions((self) => ({
+    resetHistory: () => {
+      self.setProp("history",[])
+      self.setProp("loading",false)
+      self.setProp("error", ""),
+      self.setProp("textInput", "")
+      self.setProp("html","")
+    },
     callAgent: async () => {
-      console.log("callAgent")
       self.setProp("loading",true)
       self.setProp("error", "")
       try {
-        console.log("textInput", self.textInput)
-        const response = await api.makeThreeJsGame(self.textInput)
+        const response = await api.makeThreeJsGame(self.history.map(i=>({content: i.content, role: i.role})),self.textInput)
         if (response.kind !== "ok") {
           self.setProp("error", response.kind)
           return
         }
-        self.setProp("html", response.html)
+        self.setProp("history",[...self.history, {role: "user", content: self.textInput, createdAt: new Date().toISOString()}])
+        self.setProp("textInput", "")
+        self.setProp("history",[...self.history, {role: "assistant", content: response.content, createdAt: new Date().toISOString()}])
+
+        // This is where we transform the data into the shape we expect for our MST model.
+        const htmlMatch = response.content.match(/```html([\s\S]*?)```/);
+        if (htmlMatch && htmlMatch[1]) {
+          self.setProp("html", htmlMatch[1].trim())
+        } else {
+            console.log("No HTML code block found.");
+        }
       } catch (error: any) {
         console.log("error", error) 
         self.setProp("error", error.message || "Unknown error")

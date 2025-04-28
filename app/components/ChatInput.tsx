@@ -32,7 +32,7 @@ export const ChatInput = observer(function ChatInput(props: ChatInputProps) {
         tw.m5,
         tw.rounded,
         { height: 100, textAlignVertical: 'top' }]}></TextInput>
-      <IconButton icon="send" onPress={props.onSendPress}></IconButton>
+      <IconButton icon="send" onPress={props.onSendPress} loading={props.loading}></IconButton>
     </View>
   )
 })

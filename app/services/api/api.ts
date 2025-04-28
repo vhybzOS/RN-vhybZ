@@ -48,15 +48,15 @@ export class Api {
   }
 
   async makeThreeJsGame(
-    text: string,
-  ): Promise<{  html: string, content: string , kind: "ok" } | GeneralApiProblem> {
-    console.log("makeThreeJsGame", text)
+    history: { role: string; content: string }[],
+    prompt: string,
+  ): Promise<{  content: string , kind: "ok" } | GeneralApiProblem> {
     // make the api call
     const messages = [
       {
         role: "system",
         content: 
-`you are the best software engineer that exist, base on user request create a html.
+`you are the best software engineer that exist, base on user request create a mobile responsive html.
 response example:
 \`\`\`html
 <!doctype html>
@@ -70,9 +70,10 @@ response example:
 </html>
 \`\`\``
       },
+      ...history,
       {
         role: "user",
-        content: text,
+        content: prompt,
       }
     ]
 
@@ -81,7 +82,7 @@ response example:
       {
         messages: messages,
         temperature: 0.6,
-        max_tokens: 800,
+        // max_tokens: 800,
         top_p: 0.95,
         frequency_penalty: 0,
         presence_penalty: 0,
@@ -99,19 +100,8 @@ response example:
     // transform the data into the format we are expecting
     try {
       const rawData = (response.data as any).choices[0].message.content
-      console.log(rawData)
-      let htmlStr = ""
 
-      // This is where we transform the data into the shape we expect for our MST model.
-      const htmlMatch = rawData.match(/```html([\s\S]*?)```/);
-      if (htmlMatch && htmlMatch[1]) {
-          htmlStr = htmlMatch[1].trim();
-          console.log(htmlStr);
-      } else {
-          console.log("No HTML code block found.");
-      }
-
-      return { kind: "ok", html: htmlStr, content: rawData }
+      return { kind: "ok", content: rawData }
     } catch (e) {
       if (__DEV__ && e instanceof Error) {
         console.error(`Bad data: ${e.message}\n${response.data}`, e.stack)

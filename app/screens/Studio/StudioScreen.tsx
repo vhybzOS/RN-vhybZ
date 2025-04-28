@@ -14,7 +14,7 @@ interface StudioScreenProps extends AppStackScreenProps<"Studio"> { }
 
 export const StudioScreen: FC<StudioScreenProps> = observer(function StudioScreen() {
   // Pull in one of our MST stores
-  const { studioStore: {textInput, setProp, loading, callAgent, html} } = useStores()
+  const { studioStore: {textInput, setProp, loading, callAgent, html, resetHistory} } = useStores()
 
   // Pull in navigation via hook
   // const navigation = useNavigation()
@@ -27,7 +27,7 @@ export const StudioScreen: FC<StudioScreenProps> = observer(function StudioScree
           // mode="small"
           title={"Studio"}
         />
-        {/* <Appbar.Action icon={"printer"} onPress={handlePrint} /> */}
+        <Appbar.Action icon="autorenew" onPress={resetHistory} />
         {/* <Appbar.Action */}
         {/*   icon={"basket"} */}
         {/*   onPress={() => { */}
