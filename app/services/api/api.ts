@@ -90,7 +90,6 @@ response example:
       },
     )
 
-    console.log("response", response)
     // the typical ways to die when calling an api
     if (!response.ok) {
       const problem = getGeneralApiProblem(response)
