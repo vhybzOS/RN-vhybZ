@@ -52,6 +52,7 @@ import {
   ShareIntentProvider,
 } from "expo-share-intent"
 import { getStateFromPath } from "@react-navigation/native"
+import { api } from "./services/api-sdk"
 
 export const NAVIGATION_PERSISTENCE_KEY = "NAVIGATION_STATE"
 
@@ -129,9 +130,11 @@ function App(props: AppProps) {
     [colorScheme],
   )
 
-  const { rehydrated } = useInitialRootStore(() => {
+  const { rootStore, rehydrated } = useInitialRootStore(() => {
     // This runs after the root store has been initialized and rehydrated.
-
+    if (rootStore.authenticationStore.authToken && rootStore.authenticationStore.refreshToken && rehydrated) {
+      api.setAccessToken(rootStore.authenticationStore.authToken, rootStore.authenticationStore.refreshToken)
+    }
     // If your initialization scripts run very fast, it's good to show the splash screen for just a bit longer to prevent flicker.
     // Slightly delaying splash screen hiding for better UX; can be customized or removed as needed,
     // Note: (vanilla Android) The splash-screen will not appear if you launch your app via the terminal or Android Studio. Kill the app and launch it normally by tapping on the launcher icon. https://stackoverflow.com/a/69831106

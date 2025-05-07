@@ -1,55 +1,47 @@
 import { observer } from "mobx-react-lite"
-import React, { ComponentType, FC, useEffect, useMemo, useRef, useState } from "react"
+import React, { FC, useRef, useState } from "react"
 import { TextInput, TextStyle, ViewStyle } from "react-native"
-import { Button, Icon, Screen, Text, TextField } from "../components"
+import { Button, Screen, Text, TextField } from "../components"
 import { useStores } from "../models"
-import { AppStackScreenProps } from "../navigators"
+import { AppStackScreenProps, AppNavigation } from "../navigators"
 import { colors, spacing } from "../theme"
+import { useNavigation } from "@react-navigation/native"
 
 interface LoginScreenProps extends AppStackScreenProps<"Login"> { }
 
 export const LoginScreen: FC<LoginScreenProps> = observer(function LoginScreen(_props) {
+  const navigation = useNavigation<AppNavigation>()
   const authPasswordInput = useRef<TextInput>(null)
 
   const [authPassword, setAuthPassword] = useState("")
   const [isAuthPasswordHidden, setIsAuthPasswordHidden] = useState(true)
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [attemptsCount, setAttemptsCount] = useState(0)
+  const [error, setError] = useState("")
   const {
-    authenticationStore: { authEmail, setAuthEmail, setAuthToken, validationError },
+    authenticationStore: { authEmail, setAuthEmail, validationError, login },
   } = useStores()
 
-  useEffect(() => {
-    // Here is where you could fetch credentials from keychain or storage
-    // and pre-fill the form fields.
-    setAuthEmail("ignite@infinite.red")
-    setAuthPassword("ign1teIsAwes0m3")
-
-    // Return a "cleanup" function that React will run when the component unmounts
-    return () => {
-      setAuthPassword("")
-      setAuthEmail("")
-    }
-  }, [])
-
-  const error = isSubmitted ? validationError : ""
-
-  function login() {
+  const handleLogin = async () => {
     setIsSubmitted(true)
     setAttemptsCount(attemptsCount + 1)
 
-    if (validationError) return
+    if (validationError) {
+      setError(validationError)
+      return
+    }
 
-    // Make a request to your server to get an authentication token.
-    // If successful, reset the fields and set the token.
+    const { error: loginError } = await login(authEmail, authPassword)
+    
+    if (loginError) {
+      setError(loginError instanceof Error ? loginError.message : "An error occurred during login")
+      return
+    }
+
     setIsSubmitted(false)
     setAuthPassword("")
-    setAuthEmail("")
-
-    // We'll mock this with a fake token.
-    setAuthToken(String(Date.now()))
+    setError("")
   }
-
 
   return (
     <Screen
@@ -60,6 +52,7 @@ export const LoginScreen: FC<LoginScreenProps> = observer(function LoginScreen(_
       <Text testID="login-heading" tx="loginScreen.signIn" style={$signIn} />
       <Text tx="loginScreen.enterDetails" style={$enterDetails} />
       {attemptsCount > 2 && <Text tx="loginScreen.hint" style={$hint} />}
+      {error ? <Text text={error} style={$error} /> : null}
 
       <TextField
         value={authEmail}
@@ -71,7 +64,7 @@ export const LoginScreen: FC<LoginScreenProps> = observer(function LoginScreen(_
         keyboardType="email-address"
         labelTx="loginScreen.emailFieldLabel"
         placeholderTx="loginScreen.emailFieldPlaceholder"
-        helper={error}
+        helper={isSubmitted ? validationError : ""}
         onSubmitEditing={() => authPasswordInput.current?.focus()}
       />
 
@@ -86,14 +79,21 @@ export const LoginScreen: FC<LoginScreenProps> = observer(function LoginScreen(_
         secureTextEntry={isAuthPasswordHidden}
         labelTx="loginScreen.passwordFieldLabel"
         placeholderTx="loginScreen.passwordFieldPlaceholder"
-        onSubmitEditing={login}
+        onSubmitEditing={handleLogin}
       />
 
       <Button
         testID="login-button"
         tx="loginScreen.tapToSignIn"
         style={$tapButton}
-        onPress={login}
+        onPress={handleLogin}
+      />
+      
+      <Button
+        testID="signup-button"
+        tx="loginScreen.signup"
+        style={$tapButton}
+        onPress={() => navigation.navigate("Signup")}
       />
     </Screen>
   )
@@ -114,6 +114,11 @@ const $enterDetails: TextStyle = {
 
 const $hint: TextStyle = {
   color: colors.tint,
+  marginBottom: spacing.md,
+}
+
+const $error: TextStyle = {
+  color: colors.error,
   marginBottom: spacing.md,
 }
 

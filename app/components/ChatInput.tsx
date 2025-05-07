@@ -29,9 +29,10 @@ export const ChatInput = observer(function ChatInput(props: ChatInputProps) {
         tw.flex,
         tw.bgGray300,
         tw.p10,
+        tw.pb10,
         tw.m5,
         tw.rounded,
-        { height: 100, textAlignVertical: 'top' }]}></TextInput>
+        {textAlignVertical: 'top' }]}></TextInput>
       <IconButton icon="send" onPress={props.onSendPress} loading={props.loading}></IconButton>
     </View>
   )
@@ -39,10 +40,4 @@ export const ChatInput = observer(function ChatInput(props: ChatInputProps) {
 
 const $container: ViewStyle = {
   justifyContent: "center",
-}
-
-const $text: TextStyle = {
-  fontFamily: typography.primary.normal,
-  fontSize: 14,
-  color: colors.palette.primary500,
 }

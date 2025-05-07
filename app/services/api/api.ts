@@ -16,9 +16,6 @@ import type { ApiConfig, ApiFeedResponse } from "./api.types"
 export const DEFAULT_API_CONFIG: ApiConfig = {
   url: Config.API_URL,
   timeout: 100000,
-  apiKey: Config.API_KEY,
-  apiVersion: Config.API_VERSION,
-  model: Config.MODEL
 }
 
 /**
@@ -35,13 +32,9 @@ export class Api {
   constructor(config: ApiConfig = DEFAULT_API_CONFIG) {
     this.config = config
     this.apisauce = create({
-      baseURL: `${this.config.url}/${this.config.model}`,
+      baseURL: `${this.config.url}`,
       timeout: this.config.timeout,
-      params: {
-        "api-version": config.apiVersion,
-      },
       headers: {
-        "api-key": config.apiKey,
         Accept: "application/json",
       },
     })

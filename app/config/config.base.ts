@@ -21,6 +21,7 @@ const BaseConfig: ConfigBaseProps = {
    * is pressed while in that screen. Only affects Android.
    */
   exitRoutes: ["ChargeList","TankhahHome"],
+
 }
 
 export default BaseConfig

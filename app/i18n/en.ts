@@ -1,4 +1,3 @@
-
 const en = {
   common: {
     ok: "OK!",
@@ -20,7 +19,7 @@ const en = {
   errorScreen: {
     title: "Something went wrong!",
     friendlySubtitle:
-      "This is the screen your users will see when an error is thrown during production. You’ll want to customize this message (located at ‘app/i18n/en.ts’) and probably the layout (‘app/screens/ErrorScreen’). If you want to remove it altogether, check ‘app/app.tsx’ for the <ErrorBoundary> component.",
+      "This is the screen your users will see when an error is thrown during production. You'll want to customize this message (located at 'app/i18n/en.ts') and probably the layout ('app/screens/ErrorScreen'). If you want to remove it altogether, check 'app/app.tsx' for the <ErrorBoundary> component.",
     reset: "Restart the app",
     traceTitle: "Error stack from %{name}",
   },
@@ -45,6 +44,18 @@ const en = {
     passwordFieldPlaceholder: "The super secret password goes here",
     tapToSignIn: "Tap to sign in!",
     hint: "Hint: You can use any email and password you like :)",
+    signup: "Sign Up",
+  },
+  signupScreen: {
+    signUp: "Sign Up",
+    enterDetails: "Enter your details below to create an account.",
+    emailFieldLabel: "Email",
+    emailFieldPlaceholder: "Enter your email address",
+    passwordFieldLabel: "Password",
+    passwordFieldPlaceholder: "Enter your password",
+    confirmPasswordFieldLabel: "Confirm Password",
+    confirmPasswordFieldPlaceholder: "Confirm your password",
+    tapToSignUp: "Tap to sign up!",
   },
   tabNavigator: {
     tankhahTab: "Petty Cash",

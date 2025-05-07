@@ -38,6 +38,7 @@ import { BottomSheetModalProvider } from "@gorhom/bottom-sheet"
 export type AppStackParamList = {
   Welcome: undefined
   Login: undefined
+  Signup: undefined
   Studio: undefined
   AppTabs: NavigatorScreenParams<AppTabParamList>
 }
@@ -90,6 +91,7 @@ const AppStack = observer(function AppStack() {
       ) : (
         <>
           <Stack.Screen name="Login" component={Screens.LoginScreen} />
+          <Stack.Screen name="Signup" component={Screens.SignupScreen} />
         </>
       )}
 

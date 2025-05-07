@@ -1,7 +1,7 @@
 import { Instance, SnapshotIn, SnapshotOut, types } from "mobx-state-tree"
 import { withSetPropAction } from "./helpers/withSetPropAction"
 import { HistoryItemModel } from "./HistoryItem"
-import { api } from "app/services/api"
+import { api } from "app/services/api-sdk/api"
 
 /**
  * Model description here for TypeScript hints.
@@ -29,6 +29,7 @@ export const StudioStoreModel = types
       self.setProp("loading",true)
       self.setProp("error", "")
       try {
+        
         const response = await api.makeThreeJsGame(self.history.map(i=>({content: i.content, role: i.role})),self.textInput)
         if (response.kind !== "ok") {
           self.setProp("error", response.kind)
