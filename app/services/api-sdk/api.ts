@@ -1,5 +1,5 @@
-import "@vhybzOS/api"
-import { AzureApi, AuthApi, Configuration } from "@vhybzOS/api"
+import "@vhybzUX/api"
+import { AzureApi, AuthApi, Configuration } from "@vhybzUX/api"
 import { ApiConfig } from "./api.types"
 import Config from "../../config"
 
