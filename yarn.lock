@@ -2723,10 +2723,10 @@
     "@urql/core" ">=2.3.1"
     wonka "^4.0.14"
 
-"@vhybzUX/api@2025.5.14-6b703dd":
-  version "2025.5.14-6b703dd"
-  resolved "https://npm.pkg.github.com/download/@vhybzUX/api/2025.5.14-6b703dd/abe577f1578eb1f94e3ffb453e27ae8fd692ffaa#abe577f1578eb1f94e3ffb453e27ae8fd692ffaa"
-  integrity sha512-3u8DKB4XFS6qbDwsZprDGNX0UHV5OP3ML+WDriOolfQlaH3Gwq8L2aIig49b+yABOTWh2FLJvxmfRN/grjp4tA==
+"@vhybzUX/api@2025.5.14-8345832":
+  version "2025.5.14-8345832"
+  resolved "https://npm.pkg.github.com/download/@vhybzUX/api/2025.5.14-8345832/10be99bc45fb1aa1bfb8401c0cb7b89ae9f6a4cb#10be99bc45fb1aa1bfb8401c0cb7b89ae9f6a4cb"
+  integrity sha512-zUlXvDcShZCo548ltde+ZCkRKGfIj6AwV9HJqaUQCVsHZxMYLfY1fJyq1FSgIhtpLjJb6UkqdCkgegZ8746Y/g==
   dependencies:
     axios "^1.6.1"
 

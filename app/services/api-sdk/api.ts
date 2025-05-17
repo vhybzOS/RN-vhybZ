@@ -1,5 +1,5 @@
 import "@vhybzUX/api"
-import { AzureApi, AuthApi, Configuration } from "@vhybzUX/api"
+import { AzureApi, AuthApi, Configuration, AgentApi, AgentApiAgentMakeHtmlPostRequest } from "@vhybzUX/api"
 import { ApiConfig } from "./api.types"
 import Config from "../../config"
 
@@ -10,6 +10,7 @@ const DEFAULT_API_CONFIG: ApiConfig = {
 export class Api {
     public api: AzureApi
     public auth: AuthApi
+    public agent: AgentApi
     private config: ApiConfig
 
     /**
@@ -20,6 +21,7 @@ export class Api {
         let sdkConfig = new Configuration({ basePath: config.baseUrl })
         this.api = new AzureApi(sdkConfig)
         this.auth = new AuthApi(sdkConfig)
+        this.agent = new AgentApi(sdkConfig)
     }
 
     private isTokenExpired(token: string): boolean {
@@ -38,7 +40,7 @@ export class Api {
         if (this.config.accessToken && this.isTokenExpired(this.config.accessToken)) {
             await this.refreshAccessToken()
         }
-        return func.call(this.api, request, { headers: { "Authorization": `${this.config.accessToken}` } })
+        return func.call(this.agent, request, { headers: { "Authorization": `${this.config.accessToken}` } })
     }
 
     setAccessToken(token: string, refreshToken: string) {
@@ -123,6 +125,10 @@ export class Api {
             console.log(response.data)
             return { kind: "bad-data" }
         }
+    }
+
+    async callAgent(request: AgentApiAgentMakeHtmlPostRequest) {
+        return this.agent.agentMakeHtmlPost({ request: request })
     }
 
 
