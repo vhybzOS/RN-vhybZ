@@ -22,5 +22,8 @@ module.exports = ({ config }: ConfigContext): Partial<ExpoConfig> => {
       require("./plugins/withSplashScreen").withSplashScreen,
       require("./plugins/withFlipperDisabled").withFlipperDisabled,
     ],
+    extra: {
+      geminiAPIKey: process.env.GEMINI_API_KEY
+    }
   }
 }
