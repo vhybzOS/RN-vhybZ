@@ -80,10 +80,10 @@ const AppStack = observer(function AppStack() {
   return (
     <Stack.Navigator
       screenOptions={{ headerShown: false }}
-      initialRouteName={isAuthenticated ? "AppTabs" : "Login"}
+      initialRouteName={isAuthenticated ? "AppTabs" : "Studio"}
     // initialRouteName="TestScreen"
     >
-      {isAuthenticated ? (
+      {!isAuthenticated ? (
         <>
           <Stack.Screen name="Studio" component={Screens.StudioScreen} />
           {/* <Stack.Screen name="AppTabs" component={AppTabNavigator} /> */}
