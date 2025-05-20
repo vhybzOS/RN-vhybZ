@@ -2,13 +2,13 @@ import * as React from "react"
 import { StyleProp, TextInput, TextStyle, View, ViewStyle } from "react-native"
 import { observer } from "mobx-react-lite"
 import { colors, typography } from "app/theme"
-import { IconButton } from "react-native-paper"
+import { IconButton, useTheme } from "react-native-paper"
 import { tw } from "app/theme/tailwind"
 
 export interface ChatInputProps {
   text: string
   onTextChange: (s: string) => void
-  onSendPress: ()=>void
+  onSendPress: () => void
   loading: boolean
   /**
    * An optional style override useful for padding & margin.
@@ -22,6 +22,7 @@ export interface ChatInputProps {
 export const ChatInput = observer(function ChatInput(props: ChatInputProps) {
   const { style } = props
   const $styles = [$container, style]
+  const theme = useTheme()
 
   return (
     <View style={[tw.flexNone, tw.flexRow, $styles]}>
@@ -32,9 +33,10 @@ export const ChatInput = observer(function ChatInput(props: ChatInputProps) {
         tw.pb10,
         tw.m5,
         tw.rounded,
-        {textAlignVertical: 'top' }]}></TextInput>
+        { backgroundColor: theme.colors.surface, color: theme.colors.onSurface },
+        { textAlignVertical: 'top' }]}></TextInput>
       <IconButton icon="send" onPress={props.onSendPress} loading={props.loading}></IconButton>
-    </View>
+    </View >
   )
 })
 
