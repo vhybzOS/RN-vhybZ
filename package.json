@@ -41,7 +41,6 @@
     "@realm/react": "^0.6.2",
     "@shopify/flash-list": "1.6.3",
     "@types/randomcolor": "^0.5.9",
-    "@vhybzUX/api": "2025.5.14-8345832",
     "apisauce": "3.0.1",
     "date-fns": "^2.30.0",
     "date-fns-jalali": "^3.6.0-0",
