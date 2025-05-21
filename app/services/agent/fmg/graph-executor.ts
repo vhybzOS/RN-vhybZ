@@ -1,4 +1,4 @@
-import { ExecuteOptions, Graph, GraphExecutionState, Node } from "./types";
+import { ExecuteOptions, Graph, GraphExecutionState } from "./types";
 import { loadGraphState, saveGraphState, clearGraphState } from "./storage-helper";
 
 
@@ -70,7 +70,7 @@ export async function executeGraphPersistent(
         return output;
       }
 
-      state.currentNodeId = nextEdge.to;
+      state.currentNodeId = typeof nextEdge.to === "string" ? nextEdge.to : nextEdge.to(output, state.context);
       state.currentInput = output;
 
       if (keepState) await saveGraphState(graphId, state);
