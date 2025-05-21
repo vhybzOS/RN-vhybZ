@@ -52,8 +52,8 @@ import {
   ShareIntentProvider,
 } from "expo-share-intent"
 import { getStateFromPath } from "@react-navigation/native"
-import { api } from "./services/api-sdk"
-
+import { onSnapshot } from "mobx-state-tree"
+import { htmlGenerator } from "./services/agent"
 export const NAVIGATION_PERSISTENCE_KEY = "NAVIGATION_STATE"
 
 const { LightTheme, DarkTheme } = adaptNavigationTheme({
@@ -132,9 +132,14 @@ function App(props: AppProps) {
 
   const { rootStore, rehydrated } = useInitialRootStore(() => {
     // This runs after the root store has been initialized and rehydrated.
-    if (rootStore.authenticationStore.authToken && rootStore.authenticationStore.refreshToken && rehydrated) {
-      api.setAccessToken(rootStore.authenticationStore.authToken, rootStore.authenticationStore.refreshToken)
-    }
+    // if (rootStore.authenticationStore.authToken && rootStore.authenticationStore.refreshToken && rehydrated) {
+    //   api.setAccessToken(rootStore.authenticationStore.authToken, rootStore.authenticationStore.refreshToken)
+    // }
+    htmlGenerator.setAPIKey(rootStore.configStore.geminiAPIKey)
+    onSnapshot(rootStore.configStore, (snapshot) => {
+      htmlGenerator.setAPIKey(snapshot.geminiAPIKey)
+    })
+
     // If your initialization scripts run very fast, it's good to show the splash screen for just a bit longer to prevent flicker.
     // Slightly delaying splash screen hiding for better UX; can be customized or removed as needed,
     // Note: (vanilla Android) The splash-screen will not appear if you launch your app via the terminal or Android Studio. Kill the app and launch it normally by tapping on the launcher icon. https://stackoverflow.com/a/69831106

@@ -41,6 +41,7 @@ export type AppStackParamList = {
   Signup: undefined
   Studio: undefined
   AppTabs: NavigatorScreenParams<AppTabParamList>
+  Config: undefined
 }
 
 /**
@@ -71,7 +72,7 @@ const AppStack = observer(function AppStack() {
       navigation.dispatch(
         CommonActions.reset({
           index: 0,
-          routes: [{ name: "AppTabs", params: { screen: "TankhahHome", params: {} } }],
+          routes: [{ name: "AppTabs", params: { screen: "Studio", params: {} } }],
         }),
       )
     }
@@ -80,24 +81,36 @@ const AppStack = observer(function AppStack() {
   return (
     <Stack.Navigator
       screenOptions={{ headerShown: false }}
-      initialRouteName={isAuthenticated ? "AppTabs" : "Login"}
+      initialRouteName={isAuthenticated ? "AppTabs" : "Studio"}
     // initialRouteName="TestScreen"
     >
-      {isAuthenticated ? (
-        <>
-          <Stack.Screen name="Studio" component={Screens.StudioScreen} />
-          {/* <Stack.Screen name="AppTabs" component={AppTabNavigator} /> */}
-        </>
-      ) : (
-        <>
-          <Stack.Screen name="Login" component={Screens.LoginScreen} />
-          <Stack.Screen name="Signup" component={Screens.SignupScreen} />
-        </>
-      )}
+      {/* {!isAuthenticated ? ( */}
+      {/*   <> */}
+      {/*     <Stack.Screen name="Studio" component={Screens.StudioScreen} /> */}
+      {/*   </> */}
+      {/* ) : ( */}
+      {/*   <> */}
+      {/*     <Stack.Screen name="Login" component={Screens.LoginScreen} /> */}
+      {/*     <Stack.Screen name="Signup" component={Screens.SignupScreen} /> */}
+      {/*   </> */}
+      {/* )} */}
 
+      <Stack.Screen name="Studio" component={Screens.StudioScreen} />
 
       {/** 🔥 Your screens go here */}
       {/* <Stack.Screen name="NoteList" component={Screens.NoteListScreen} /> */}
+      <Stack.Screen
+        name="Config"
+        options={{
+          headerShown: true,
+          header: () => (
+            <Appbar.Header>
+              <Appbar.BackAction onPress={goBack} />
+              <Appbar.Content title="Configs" />
+            </Appbar.Header>
+          ),
+        }}
+        component={Screens.ConfigScreen} />
       {/* IGNITE_GENERATOR_ANCHOR_APP_STACK_SCREENS */}
     </Stack.Navigator>
   )
