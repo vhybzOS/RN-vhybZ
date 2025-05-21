@@ -12,9 +12,8 @@ import {
   View,
   ViewStyle,
 } from "react-native"
-import { colors } from "../theme"
 import { ExtendedEdge, useSafeAreaInsetsStyle } from "../utils/useSafeAreaInsetsStyle"
-import { useTheme } from "react-native-paper"
+import { Surface, useTheme } from "react-native-paper"
 
 interface BaseScreenProps {
   /**
@@ -234,15 +233,13 @@ export function Screen(props: ScreenProps) {
     StatusBarProps,
     statusBarStyle = "dark",
   } = props
-  
-  const theme = useTheme()
 
-  const backgroundColor = props.backgroundColor || theme.colors.background
+  const theme = useTheme()
 
   const $containerInsets = useSafeAreaInsetsStyle(safeAreaEdges)
 
   return (
-    <View style={[$containerStyle, { backgroundColor }, $containerInsets]}>
+    <Surface style={[$containerStyle, $containerInsets]}>
       <StatusBar style={statusBarStyle} {...StatusBarProps} />
 
       <KeyboardAvoidingView
@@ -257,7 +254,7 @@ export function Screen(props: ScreenProps) {
           <ScreenWithScrolling {...props} />
         )}
       </KeyboardAvoidingView>
-    </View>
+    </Surface>
   )
 }
 

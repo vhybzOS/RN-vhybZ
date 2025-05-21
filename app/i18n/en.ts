@@ -62,6 +62,9 @@ const en = {
     attendanceTab: "Attendance",
     noteTab: "Note"
   },
+  configScreen: {
+    geminiKey: "Gemini Key",
+  }
 }
 export default en
 export type Translations = typeof en

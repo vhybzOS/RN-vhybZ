@@ -1,6 +1,5 @@
 import { Instance, SnapshotOut, types } from "mobx-state-tree"
 import { set } from "date-fns-jalali"
-import { api } from "../services/api-sdk/api"
 export const AuthenticationStoreModel = types
   .model("AuthenticationStore")
   .props({
@@ -33,51 +32,14 @@ export const AuthenticationStoreModel = types
       store.authUser = value
     },
     async login(username: string, password: string) {
-      try {
-        const response = await api.auth.authLoginPost({
-          credentials:{
-            username,
-            password
-          }
-        })
 
-        console.log("status", response.status)
-        
-        
-        if (response.status === 200) {
-          if (response.data.access_token && response.data.refresh_token) {
-            this.setAuthToken(response.data.access_token, response.data.refresh_token)
-            this.setAuthUser("empty")
-            api.setAccessToken(response.data.access_token, response.data.refresh_token)
-          }
-        }
-        return { error: null }
-      } catch (error) {
-        return { error }
-      }
     },
     async signUp(email: string, password: string) {
-      try {
-        const response = await api.auth.authRegisterPost({
-          user:{
-            email,
-            password,
-            username:email,
-          }
-        })
-        
-        
-        if (response.status === 201) {
-          this.login(email, password)
-        }
-        return { error: null }
-      } catch (error) {
-        return { error }
-      }
+
     },
     logout() {
       try {
-        
+
         this.setAuthToken(undefined)
         this.setAuthEmail("")
         this.setAuthUser(undefined)
@@ -88,5 +50,5 @@ export const AuthenticationStoreModel = types
     }
   }))
 
-export interface AuthenticationStore extends Instance<typeof AuthenticationStoreModel> {}
-export interface AuthenticationStoreSnapshot extends SnapshotOut<typeof AuthenticationStoreModel> {}
+export interface AuthenticationStore extends Instance<typeof AuthenticationStoreModel> { }
+export interface AuthenticationStoreSnapshot extends SnapshotOut<typeof AuthenticationStoreModel> { }

@@ -1,13 +1,13 @@
 import React, { FC } from "react"
 import { observer } from "mobx-react-lite"
-import { AppStackScreenProps } from "app/navigators"
+import { AppNavigation, AppStackScreenProps } from "app/navigators"
 import { View } from "react-native"
 import { Chip, Text, Appbar, Surface } from "react-native-paper"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { ChatInput } from "app/components"
 import { tw } from "app/theme/tailwind"
 import { WebView } from 'react-native-webview';
-// import { useNavigation } from "@react-navigation/native"
+import { useNavigation } from "@react-navigation/native"
 import { useStores } from "app/models"
 
 interface StudioScreenProps extends AppStackScreenProps<"Studio"> { }
@@ -17,7 +17,7 @@ export const StudioScreen: FC<StudioScreenProps> = observer(function StudioScree
   const { studioStore: { textInput, setProp, loading, callAgent, html, resetHistory } } = useStores()
 
   // Pull in navigation via hook
-  // const navigation = useNavigation()
+  const navigation = useNavigation<AppNavigation>()
   const safeArea = useSafeAreaInsets()
   return (
     <>
@@ -28,6 +28,9 @@ export const StudioScreen: FC<StudioScreenProps> = observer(function StudioScree
         {/*   title={"Studio"} */}
         {/* /> */}
         <Appbar.Action icon="autorenew" onPress={resetHistory} />
+        <Appbar.Action icon="cog" onPress={() => {
+          navigation.navigate("Config", undefined)
+        }} />
       </Appbar>
       {!html && <Surface style={[tw.flex, tw.justifyCenter, tw.itemsCenter]}>
         <Text variant="bodyLarge">Make your idea interactive</Text>

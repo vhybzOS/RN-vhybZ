@@ -3,14 +3,19 @@ import { GoogleGenAI, FunctionCallingConfigMode, FunctionDeclaration, Type, Cont
 
 
 class Agent {
-  genAI: GoogleGenAI
+  genAI: GoogleGenAI | undefined
   history: Content[] = []
-  constructor(apiKey: string = Constants.expoConfig?.extra?.geminiAPIKey) {
-    console.log("agent key:", apiKey)
-    this.genAI = new GoogleGenAI({ apiKey })
+  constructor() {
+  }
+
+  setAPIKey(key: string) {
+    this.genAI = new GoogleGenAI({ apiKey: key })
   }
 
   async call(content: Content[] | Content): Promise<Content> {
+    if (this.genAI === undefined) {
+      throw new Error("API key not set")
+    }
     if (Array.isArray(content)) {
       this.history.push(...content)
     } else {
@@ -114,6 +119,5 @@ response example:
   }
 }
 
-console.log((new HtmlGenerator()))
 
-//export const htmlGenerator = new HtmlGenerator()
+export const htmlGenerator = new HtmlGenerator()
