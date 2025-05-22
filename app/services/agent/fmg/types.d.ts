@@ -1,4 +1,17 @@
-type NodeFn = (input: any, context: any, cancelToken: CancellationToken) => Promise<any> | any;
+import { Content, GenerateContentResponse } from "@google/genai";
+
+export type ThreadItem = {
+  name: string
+  messages: Content[]
+}
+
+interface Agent {
+  name: string;
+  complete(ctx: ThreadItem[]): Promise<ThreadItem[]>;
+  focus(ctx: ThreadItem[]): Promise<Content | Content[]>;
+}
+
+type NodeFn = (input: any, context: any, cancelToken?: CancellationToken) => Promise<any> | any;
 
 export interface CancellationTokenValue {
   cancel: () => void;
@@ -26,7 +39,7 @@ type Graph = {
 
   execute: (
     input: any,
-    options: ExecuteOptions,
+    options?: ExecuteOptions,
     initialContext?: any
   ) => Promise<any>;
 };
