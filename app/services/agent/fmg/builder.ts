@@ -1,11 +1,12 @@
-import { Graph, GraphNode, GraphEdge, NodeFn } from "./types";
+import { Graph, GraphNode, GraphEdge, NodeFn, Observer } from "./types";
 import { executeGraphPersistent } from "./graph-executor";
 
-class GraphBuilder {
+export class GraphBuilder {
   private id: string;
   private nodes: Record<string, GraphNode> = {};
   private edges: GraphEdge[] = [];
   private entryNode: string | null = null;
+  private observer: Observer | undefined;
 
   constructor(id: string) {
     this.id = id;
@@ -29,6 +30,11 @@ class GraphBuilder {
     return this;
   }
 
+  setObserver(observer: Observer): this {
+    this.observer = observer;
+    return this;
+  }
+
   build(): Graph {
     if (!this.entryNode) throw new Error("Entry node must be set.");
 
@@ -39,13 +45,16 @@ class GraphBuilder {
       entryNode: this.entryNode,
       nodes: this.nodes,
       edges: this.edges,
-
-      async execute(input, options, initialContext = {}) {
+      observer: this.observer,
+      async execute(input) {
         return executeGraphPersistent(
           self.build(), // rebuild to isolate runtime execution
           input,
-          options,
-          initialContext
+          {
+            graphId: self.id,
+          },
+          [],
+          self.observer,
         );
       }
     };

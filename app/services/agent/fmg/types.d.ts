@@ -11,6 +11,14 @@ interface Agent {
   focus(ctx: ThreadItem[]): Promise<Content | Content[]>;
 }
 
+export type Observer = {
+  onGraphStart?: (graphId: string, input: any) => void;
+  onNodeStart?: (nodeId: string, input: any, context: any) => void;
+  onNodeComplete?: (nodeId: string, output: any, context: any, durationMs: number) => void;
+  onError?: (nodeId: string, error: Error, context: any) => void;
+  onGraphComplete?: (output: any, context: any, durationMs: number) => void;
+};
+
 type NodeFn = (input: any, context: any, cancelToken?: CancellationToken) => Promise<any> | any;
 
 export interface CancellationTokenValue {
@@ -36,6 +44,7 @@ type Graph = {
   entryNode: string;
   nodes: Record<string, GraphNode>;
   edges: GraphEdge[];
+  observer: Observer | undefined;
 
   execute: (
     input: any,
@@ -48,7 +57,6 @@ export type ExecuteOptions = {
   graphId: string;
   resume?: boolean;
   fromNodeId?: string;
-  observer?: Observer;
   cancelToken?: CancellationToken;
   keepState?: boolean;
 };

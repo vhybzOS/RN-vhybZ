@@ -53,7 +53,7 @@ import {
 } from "expo-share-intent"
 import { getStateFromPath } from "@react-navigation/native"
 import { onSnapshot } from "mobx-state-tree"
-import { htmlGenerator } from "./services/agent"
+import { GraphProvider } from "./services/agent/GraphContext"
 export const NAVIGATION_PERSISTENCE_KEY = "NAVIGATION_STATE"
 
 const { LightTheme, DarkTheme } = adaptNavigationTheme({
@@ -130,15 +130,12 @@ function App(props: AppProps) {
     [colorScheme],
   )
 
-  const { rootStore, rehydrated } = useInitialRootStore(() => {
+  const { rootStore: { configStore: geminiApiKey }, rehydrated
+  } = useInitialRootStore(() => {
     // This runs after the root store has been initialized and rehydrated.
     // if (rootStore.authenticationStore.authToken && rootStore.authenticationStore.refreshToken && rehydrated) {
     //   api.setAccessToken(rootStore.authenticationStore.authToken, rootStore.authenticationStore.refreshToken)
     // }
-    htmlGenerator.setAPIKey(rootStore.configStore.geminiAPIKey)
-    onSnapshot(rootStore.configStore, (snapshot) => {
-      htmlGenerator.setAPIKey(snapshot.geminiAPIKey)
-    })
 
     // If your initialization scripts run very fast, it's good to show the splash screen for just a bit longer to prevent flicker.
     // Slightly delaying splash screen hiding for better UX; can be customized or removed as needed,
@@ -223,12 +220,14 @@ function App(props: AppProps) {
           <ErrorBoundary catchErrors={Config.catchErrors}>
             <GestureHandlerRootView style={$container}>
               <PaperProvider theme={theme}>
-                <AppNavigator
-                  theme={theme}
-                  linking={linking}
-                  initialState={initialNavigationState}
-                  onStateChange={onNavigationStateChange}
-                />
+                <GraphProvider apiKey={geminiApiKey.geminiAPIKey}>
+                  <AppNavigator
+                    theme={theme}
+                    linking={linking}
+                    initialState={initialNavigationState}
+                    onStateChange={onNavigationStateChange}
+                  />
+                </GraphProvider>
               </PaperProvider>
             </GestureHandlerRootView>
           </ErrorBoundary>

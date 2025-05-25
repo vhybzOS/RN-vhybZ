@@ -9,6 +9,7 @@ import { tw } from "app/theme/tailwind"
 import { WebView } from 'react-native-webview';
 import { useNavigation } from "@react-navigation/native"
 import { useStores } from "app/models"
+import { useGraph } from "app/services/agent/GraphContext"
 
 interface StudioScreenProps extends AppStackScreenProps<"Studio"> { }
 
@@ -19,6 +20,8 @@ export const StudioScreen: FC<StudioScreenProps> = observer(function StudioScree
   // Pull in navigation via hook
   const navigation = useNavigation<AppNavigation>()
   const safeArea = useSafeAreaInsets()
+  const graph = useGraph()
+
   return (
     <>
       <Appbar mode="small" safeAreaInsets={{ top: safeArea.top }}>
@@ -32,13 +35,13 @@ export const StudioScreen: FC<StudioScreenProps> = observer(function StudioScree
           navigation.navigate("Config", undefined)
         }} />
       </Appbar>
-      {!html && <Surface style={[tw.flex, tw.justifyCenter, tw.itemsCenter]}>
+      {graph.thread.length < 1 && <Surface style={[tw.flex, tw.justifyCenter, tw.itemsCenter]}>
         <Text variant="bodyLarge">Make your idea interactive</Text>
       </Surface>
       }
-      {html && <View style={[tw.flex, tw.pb10, tw.pl5, tw.pr5]}>
+      {graph.thread.length > 0 && graph.thread[graph.thread.length - 1].messages.length > 0 && <View style={[tw.flex, tw.pb10, tw.pl5, tw.pr5]}>
         <WebView
-          source={html ? { html: html } : { html: defaultPage }}
+          source={{ html: graph.thread[graph.thread.length - 1].messages[graph.thread[graph.thread.length - 1].messages.length - 1].parts[0].text || defaultPage }}
         />
       </View>}
       <Surface elevation={2} style={[tw.pt10]}>
@@ -47,7 +50,7 @@ export const StudioScreen: FC<StudioScreenProps> = observer(function StudioScree
           <Chip mode="outlined">Voice</Chip>
           <Chip mode="outlined">Camera</Chip>
         </View>
-        <ChatInput text={textInput} loading={loading} onTextChange={(val) => { setProp("textInput", val) }} onSendPress={callAgent}></ChatInput>
+        <ChatInput text={textInput} loading={loading} onTextChange={(val) => { setProp("textInput", val) }} onSendPress={() => graph.graph?.execute(textInput, undefined, graph.thread)}></ChatInput>
       </Surface>
     </>
   )

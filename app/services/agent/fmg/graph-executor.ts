@@ -1,4 +1,4 @@
-import { ExecuteOptions, Graph, GraphExecutionState } from "./types";
+import { ExecuteOptions, Graph, GraphExecutionState, Observer } from "./types";
 import { loadGraphState, saveGraphState, clearGraphState } from "./storage-helper";
 
 
@@ -6,13 +6,13 @@ export async function executeGraphPersistent(
   graph: Graph,
   input: any,
   options: ExecuteOptions,
-  initialContext: any = {}
+  initialContext: any = {},
+  observer?: Observer,
 ): Promise<any> {
   const {
     graphId,
     resume,
     fromNodeId,
-    observer,
     cancelToken,
     keepState = true, // default to true
   } = options;
