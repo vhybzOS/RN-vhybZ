@@ -17,6 +17,7 @@
     "updates": {
       "fallbackToCacheTimeout": 0
     },
+    "newArchEnabled": true,
     "jsEngine": "hermes",
     "assetBundlePatterns": [
       "**/*"
@@ -27,23 +28,12 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/app-icon-android-adaptive-foreground.png",
         "backgroundImage": "./assets/images/app-icon-android-adaptive-background.png"
-      },
-      "splash": {
-        "image": "./assets/images/splash-logo-android-universal.png",
-        "resizeMode": "contain",
-        "backgroundColor": "#A000BF"
       }
     },
     "ios": {
       "icon": "./assets/images/app-icon-ios.png",
       "supportsTablet": true,
-      "bundleIdentifier": "com.vhybz",
-      "splash": {
-        "image": "./assets/images/splash-logo-ios-mobile.png",
-        "tabletImage": "./assets/images/splash-logo-ios-tablet.png",
-        "resizeMode": "contain",
-        "backgroundColor": "#A000BF"
-      }
+      "bundleIdentifier": "com.vhybz"
     },
     "web": {
       "favicon": "./assets/images/app-icon-web-favicon.png",
@@ -58,15 +48,28 @@
       "expo-share-intent",
       "expo-localization",
       [
+        "expo-splash-screen",
+        {
+          "ios": {
+            "image": "./assets/images/splash-logo-ios-mobile.png",
+            "tabletImage": "./assets/images/splash-logo-ios-tablet.png",
+            "resizeMode": "contain",
+            "backgroundColor": "#A000BF"
+          },
+          "android": {
+            "image": "./assets/images/splash-logo-android-universal.png",
+            "resizeMode": "contain",
+            "backgroundColor": "#A000BF"
+          }
+        }
+      ],
+      [
         "expo-build-properties",
         {
           "ios": {
-            "newArchEnabled": false,
             "flipper": false
           },
-          "android": {
-            "newArchEnabled": false
-          }
+          "android": {}
         }
       ],
       [
