@@ -8,7 +8,7 @@ export function makeGraph(apiKey: string, observer: Observer): Graph {
 }
 
 export function singleNodeHtmlGenerator(apiKey: string): NodeFn {
-  return async (prompt, thread: ThreadItem[]) => {
+  return async (thread: ThreadItem[]) => {
     let agent = new GeminiAgent("doctor", { functions: { "createImage": makeImage }, declarations: tools })
     agent.setAPIKey(apiKey)
     let c: ThreadItem = { name: agent.name, messages: [] }

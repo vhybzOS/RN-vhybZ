@@ -42,6 +42,7 @@ export type AppStackParamList = {
   Studio: undefined
   AppTabs: NavigatorScreenParams<AppTabParamList>
   Config: undefined
+  Flow: undefined
 }
 
 /**
@@ -95,7 +96,10 @@ const AppStack = observer(function AppStack() {
       {/*   </> */}
       {/* )} */}
 
-      <Stack.Screen name="Studio" component={Screens.StudioScreen} />
+      <Stack.Group>
+        <Stack.Screen name="Studio" component={Screens.StudioScreen} />
+        <Stack.Screen name="Flow" component={Screens.FlowScreen} />
+      </Stack.Group>
 
       {/** 🔥 Your screens go here */}
       {/* <Stack.Screen name="NoteList" component={Screens.NoteListScreen} /> */}

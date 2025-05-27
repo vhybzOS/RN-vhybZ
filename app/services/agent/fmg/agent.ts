@@ -1,7 +1,7 @@
 import { Content, FunctionCallingConfigMode, FunctionDeclaration, GoogleGenAI, createModelContent, createPartFromFunctionResponse } from "@google/genai";
 import { Agent, ThreadItem } from "./types";
 
-export type Tool = {
+export type Tools = {
   declarations: FunctionDeclaration[];
   functions: Record<string, Function>;
 }
@@ -9,9 +9,9 @@ export type Tool = {
 export class GeminiAgent implements Agent {
   genAI: GoogleGenAI | undefined
   name: string
-  tools: Tool | undefined
+  tools: Tools | undefined
 
-  constructor(name: string, tools?: Tool) {
+  constructor(name: string, tools?: Tools) {
     this.name = name
     this.tools = tools
   }

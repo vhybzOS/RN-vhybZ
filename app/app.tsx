@@ -44,13 +44,6 @@ import {
   MD3LightTheme,
   adaptNavigationTheme,
 } from "react-native-paper"
-import {
-  addStateListener,
-  getScheme,
-  getShareExtensionKey,
-  hasShareIntent,
-  ShareIntentProvider,
-} from "expo-share-intent"
 import { getStateFromPath } from "@react-navigation/native"
 import { onSnapshot } from "mobx-state-tree"
 import { GraphProvider } from "./services/agent/GraphContext"
@@ -152,88 +145,26 @@ function App(props: AppProps) {
   // You can replace with your own loading component if you wish.
   if (!rehydrated || !isNavigationStateRestored || !areFontsLoaded) return null
 
-  const linking = {
-    prefixes: [`${Constants.expoConfig?.scheme}://`, `${PACKAGE_NAME}://`, PREFIX],
-    config,
-    getStateFromPath(path: string, config: any) {
-      // REQUIRED FOR iOS FIRST LAUNCH
-      if (path.includes(`dataUrl=${getShareExtensionKey()}`)) {
-        // redirect to the ShareIntent Screen to handle data with the hook
-        return {
-          routes: [
-            {
-              name: "TankhahSpendForm",
-            },
-          ],
-        }
-      }
-      return getStateFromPath(path, config)
-    },
-    subscribe(listener: (url: string) => void): undefined | void | (() => void) {
-      const onReceiveURL = ({ url }: { url: string }) => {
-        if (url.includes(getShareExtensionKey())) {
-          // REQUIRED FOR iOS WHEN APP IS IN BACKGROUND
-          listener(`${getScheme()}://spendform`)
-        } else {
-          listener(url)
-        }
-      }
-      const shareIntentEventSubscription = addStateListener((event) => {
-        // REQUIRED FOR ANDROID WHEN APP IS IN BACKGROUND
-        if (event.value === "pending") {
-          listener(`${getScheme()}://spendform`)
-        }
-      })
-      const urlEventSubscription = Linking.addEventListener("url", onReceiveURL)
-      return () => {
-        // Clean up the event listeners
-        shareIntentEventSubscription.remove()
-        urlEventSubscription.remove()
-      }
-    },
-    // https://reactnavigation.org/docs/deep-linking/#third-party-integrations
-    async getInitialURL() {
-      // REQUIRED FOR ANDROID FIRST LAUNCH
-      const needRedirect = hasShareIntent(getShareExtensionKey())
-      if (needRedirect) {
-        return `${Constants.expoConfig?.scheme}://spendform`
-      }
-      // As a fallback, do the default deep link handling
-      const url = await Linking.getInitialURL()
-      return url
-    },
-  }
 
   // otherwise, we're ready to render the app
   return (
-    <ShareIntentProvider
-      options={{
-        debug: false,
-        // @ts-ignore
-        onResetShareIntent: () => {
-          // navigationRef?.current?.navigate("AppTabs", { screen: "TankhahHome", params: {} })
-        },
-      }}
-    >
-      <RealmProvider {...realmConfig}>
-        <SafeAreaProvider initialMetrics={initialWindowMetrics}>
-          <ErrorBoundary catchErrors={Config.catchErrors}>
-            <GestureHandlerRootView style={$container}>
-              <PaperProvider theme={theme}>
-                <GraphProvider apiKey={geminiApiKey.geminiAPIKey}>
-                  <AppNavigator
-                    theme={theme}
-                    linking={linking}
-                    initialState={initialNavigationState}
-                    onStateChange={onNavigationStateChange}
-                  />
-                </GraphProvider>
-              </PaperProvider>
-            </GestureHandlerRootView>
-          </ErrorBoundary>
-        </SafeAreaProvider>
-      </RealmProvider>
-    </ShareIntentProvider>
+    <RealmProvider {...realmConfig}>
+      <SafeAreaProvider initialMetrics={initialWindowMetrics}>
+        <ErrorBoundary catchErrors={Config.catchErrors}>
+          <GestureHandlerRootView style={$container}>
+            <PaperProvider theme={theme}>
+              <GraphProvider apiKey={geminiApiKey.geminiAPIKey}>
+                <AppNavigator
+                  theme={theme}
+                  initialState={initialNavigationState}
+                  onStateChange={onNavigationStateChange}
+                />
+              </GraphProvider>
+            </PaperProvider>
+          </GestureHandlerRootView>
+        </ErrorBoundary>
+      </SafeAreaProvider>
+    </RealmProvider>
   )
 }
 

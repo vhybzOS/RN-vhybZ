@@ -1,5 +1,7 @@
 import React, { ReactNode, createContext, useContext, useEffect } from 'react';
 import { makeGraph } from './htmlGenerator';
+import gl from 'graphlib';
+import dagre from '@dagrejs/dagre';
 import { Observer, ThreadItem } from './fmg/types';
 
 type Graph = ReturnType<typeof makeGraph>;

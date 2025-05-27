@@ -25,11 +25,12 @@ export const StudioScreen: FC<StudioScreenProps> = observer(function StudioScree
   return (
     <>
       <Appbar mode="small" safeAreaInsets={{ top: safeArea.top }}>
-        {/* <Appbar.Content */}
-        {/*   // titleStyle={{ fontSize: 16 }} */}
-        {/*   // mode="small" */}
-        {/*   title={"Studio"} */}
-        {/* /> */}
+        <Appbar.Content
+          // titleStyle={{ fontSize: 16 }}
+          // mode="small"
+          title={""}
+        />
+        <Appbar.Action icon="alpha-f-circle" onPress={() => { navigation.navigate("Flow", undefined) }} />
         <Appbar.Action icon="autorenew" onPress={resetHistory} />
         <Appbar.Action icon="cog" onPress={() => {
           navigation.navigate("Config", undefined)

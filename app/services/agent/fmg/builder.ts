@@ -1,5 +1,9 @@
-import { Graph, GraphNode, GraphEdge, NodeFn, Observer } from "./types";
+import { Graph, GraphNode, GraphEdge, NodeFn, Observer, ThreadItem, FocusFunction } from "./types";
 import { executeGraphPersistent } from "./graph-executor";
+import dagre from "@dagrejs/dagre"
+import { Content, createModelContent, createUserContent } from "@google/genai";
+import { Tools } from "./agent";
+import { string } from "mobx-state-tree/dist/internal";
 
 export class GraphBuilder {
   private id: string;
@@ -12,7 +16,7 @@ export class GraphBuilder {
     this.id = id;
   }
 
-  addNode(id: string, fn: NodeFn): this {
+  addNode(id: string, fn: NodeFn<ThreadItem[]>): this {
     this.nodes[id] = { id, run: fn };
     return this;
   }
@@ -46,6 +50,7 @@ export class GraphBuilder {
       nodes: this.nodes,
       edges: this.edges,
       observer: this.observer,
+
       async execute(input) {
         return executeGraphPersistent(
           self.build(), // rebuild to isolate runtime execution
@@ -59,4 +64,55 @@ export class GraphBuilder {
       }
     };
   }
+}
+
+export class GemeniAgentBuilder {
+  memory: FocusFunction | undefined
+  tools: Tools | undefined
+  prompt: string | undefined
+  id: string
+
+  constructor(id: string) {
+    this.id = id;
+  }
+
+  setMemory(type: "all" | "session") {
+    if (type == "all") {
+      this.memory = async (ctx: ThreadItem[]) => {
+        let acc: Content[] = []
+        ctx.forEach((i) => {
+          return acc.concat(i.messages)
+        })
+        if (this.prompt) {
+          acc.push(createModelContent(this.prompt))
+        }
+        return Promise.resolve(acc)
+      }
+    }
+    if (type == "session") {
+      this.memory = async (ctx: ThreadItem[]) => {
+        let c = ctx.filter(p => p.name == this.id)
+        if (c.length > 0) {
+          return c[c.length - 1].messages
+        }
+        if (this.prompt) {
+          return [createModelContent(this.prompt)]
+        }
+        return [] as Content[]
+      }
+    }
+  }
+
+  addTools(toolName: string) {
+
+  }
+
+  setPrompt(prompt: string) {
+
+  }
+
+  build(): NodeFunction {
+
+  }
+
 }

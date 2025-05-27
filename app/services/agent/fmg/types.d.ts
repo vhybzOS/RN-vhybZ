@@ -1,14 +1,16 @@
 import { Content, GenerateContentResponse } from "@google/genai";
+import { Graph as glGraph } from "graphlib"
 
 export type ThreadItem = {
   name: string
   messages: Content[]
 }
 
+export type FocusFunction = (ctx: ThreadItem[]) => Promise<Content | Content[]>
+
 interface Agent {
   name: string;
-  complete(ctx: ThreadItem[]): Promise<ThreadItem[]>;
-  focus(ctx: ThreadItem[]): Promise<Content | Content[]>;
+  complete(ctx: ThreadItem[], focus: FocusFunction): Promise<ThreadItem[]>;
 }
 
 export type Observer = {
@@ -19,7 +21,7 @@ export type Observer = {
   onGraphComplete?: (output: any, context: any, durationMs: number) => void;
 };
 
-type NodeFn = (input: any, context: any, cancelToken?: CancellationToken) => Promise<any> | any;
+type NodeFn<T> = (input: T, cancelToken?: CancellationToken) => Promise<T> | T;
 
 export interface CancellationTokenValue {
   cancel: () => void;
@@ -52,6 +54,8 @@ type Graph = {
     initialContext?: any
   ) => Promise<any>;
 };
+
+
 
 export type ExecuteOptions = {
   graphId: string;
