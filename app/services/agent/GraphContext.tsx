@@ -1,10 +1,6 @@
 import React, { ReactNode, createContext, useContext, useEffect } from 'react';
-import { makeGraph } from './htmlGenerator';
-import gl from 'graphlib';
-import dagre from '@dagrejs/dagre';
-import { Observer, ThreadItem } from './fmg/types';
-
-type Graph = ReturnType<typeof makeGraph>;
+import { Observer, ThreadItem, Graph } from './fmg/types';
+import { Manifest } from './fmg/manifest';
 
 interface GraphContextType {
   graph: Graph | null;
@@ -28,6 +24,7 @@ interface GraphProviderProps {
 }
 
 export const GraphProvider = ({ children, apiKey }: GraphProviderProps) => {
+  const manifest = new Manifest();
   const [graph, setGraph] = React.useState<Graph | null>(null);
   const [thread, setThread] = React.useState<ThreadItem[]>([]);
 
@@ -35,20 +32,25 @@ export const GraphProvider = ({ children, apiKey }: GraphProviderProps) => {
     onGraphStart(graphId, input) {
       console.log("Graph started", graphId, input);
     },
-    onNodeStart(nodeId, input, context) {
-      console.log("Node started", nodeId, input, context);
-      setThread(context as ThreadItem[]);
+    onNodeStart(nodeId, input) {
+      console.log("Node started", nodeId, input);
+      setThread(input as ThreadItem[]);
     },
-    onNodeComplete(nodeId, output, context, durationMs) {
-      console.log("Node onNodeComplete", nodeId, JSON.stringify(output), context, durationMs);
+    onNodeComplete(nodeId, output, durationMs) {
+      console.log("Node onNodeComplete", nodeId, JSON.stringify(output), durationMs);
       setThread(output as ThreadItem[]);
+    },
+    onError(nodeId, error) {
+      console.error("Node error", nodeId, error);
     }
   }
   useEffect(() => {
-    if (apiKey && apiKey.length > 0) {
+    if (apiKey) {
       console.log("apikey setted", apiKey);
-      const g = makeGraph(apiKey, observer);
-      setGraph(g);
+      manifest.setApiKey(apiKey);
+      manifest.load(observer).then((g) => {
+        setGraph(g);
+      }).catch(e => { console.error("Error loading graph manifest:", e); });
     }
   }, [apiKey]);
   return (

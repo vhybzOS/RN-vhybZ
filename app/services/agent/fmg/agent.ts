@@ -1,10 +1,7 @@
-import { Content, FunctionCallingConfigMode, FunctionDeclaration, GoogleGenAI, createModelContent, createPartFromFunctionResponse } from "@google/genai";
-import { Agent, ThreadItem } from "./types";
+import { Content, FunctionCallingConfigMode, GoogleGenAI, createModelContent, createPartFromFunctionResponse } from "@google/genai";
+import { Agent, FocusFunction, ThreadItem, Tools } from "./types";
 
-export type Tools = {
-  declarations: FunctionDeclaration[];
-  functions: Record<string, Function>;
-}
+
 
 export class GeminiAgent implements Agent {
   genAI: GoogleGenAI | undefined
@@ -20,7 +17,7 @@ export class GeminiAgent implements Agent {
     this.genAI = new GoogleGenAI({ apiKey: key })
   }
 
-  async complete(ctx: ThreadItem[], sesstion?: boolean): Promise<ThreadItem[]> {
+  async complete(ctx: ThreadItem[], focus: FocusFunction): Promise<ThreadItem[]> {
     if (this.genAI === undefined) {
       throw new Error("API key not set")
     }
@@ -29,22 +26,17 @@ export class GeminiAgent implements Agent {
       name: this.name,
       messages: []
     }
-    if (sesstion && ctx.length > 0) {
-      tdi = {
-        name: ctx[ctx.length - 1].name,
-        messages: [...ctx[ctx.length - 1].messages]
-      }
-    } else {
-      const input = await this.focus(ctx)
-      if (input === undefined) {
-        throw new Error("No input provided")
-      }
 
-      tdi = {
-        name: this.name,
-        messages: Array.isArray(input) ? input : [input]
-      }
+    const input = await focus(ctx)
+    if (input === undefined) {
+      throw new Error("No input provided")
     }
+
+    tdi = {
+      name: this.name,
+      messages: Array.isArray(input) ? input : [input]
+    }
+
 
     const response = await this.genAI.models.generateContent({
       model: 'gemini-2.0-flash-001',
@@ -72,18 +64,10 @@ export class GeminiAgent implements Agent {
         console.log("inside func call")
         let c = createModelContent(createPartFromFunctionResponse(response.functionCalls[0].id || "", "createImage", { output: res }))
         tdi.messages.push(c)
-        return await this.complete([...ctx.slice(0, ctx.length - 1), tdi], true)
-
+        return await this.complete([...ctx.slice(0, ctx.length - 1), tdi], focus)
       }
     }
     return [...ctx, tdi]
-  }
-  focus(ctx: ThreadItem[]): Promise<Content | Content[]> {
-    let acc: Content[] = []
-    ctx.forEach((i) => {
-      return acc.concat(i.messages)
-    })
-    return Promise.resolve(acc)
   }
 }
 

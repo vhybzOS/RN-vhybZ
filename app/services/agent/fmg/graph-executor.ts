@@ -2,21 +2,20 @@ import { ExecuteOptions, Graph, GraphExecutionState, Observer } from "./types";
 import { loadGraphState, saveGraphState, clearGraphState } from "./storage-helper";
 
 
-export async function executeGraphPersistent(
+export async function executeGraphPersistent<T>(
   graph: Graph,
-  input: any,
+  input: T,
   options: ExecuteOptions,
-  initialContext: any = {},
   observer?: Observer,
-): Promise<any> {
+): Promise<void> {
   const {
     graphId,
     resume,
     fromNodeId,
     cancelToken,
-    keepState = true, // default to true
+    keepState = false, // default to true
   } = options;
-
+  console.log("graph start")
   let state: GraphExecutionState;
 
   if (resume) {
@@ -28,7 +27,6 @@ export async function executeGraphPersistent(
     state = {
       currentNodeId: fromNodeId || graph.entryNode,
       currentInput: input,
-      context: initialContext,
       completedNodes: [],
       startedAt: Date.now(),
     };
@@ -45,11 +43,11 @@ export async function executeGraphPersistent(
     const node = graph.nodes[state.currentNodeId];
     if (!node) throw new Error(`Node not found: ${state.currentNodeId}`);
 
-    observer?.onNodeStart?.(state.currentNodeId, state.currentInput, state.context);
+    observer?.onNodeStart?.(state.currentNodeId, state.currentInput);
     const nodeStart = Date.now();
 
     try {
-      const output = await node.run(state.currentInput, state.context, cancelToken);
+      const output = await node.run(state.currentInput, cancelToken);
       if (cancelToken?.isCancelled) {
         console.log(`[Execution Canceled] after node ${state.currentNodeId}`);
         if (keepState) await saveGraphState(graphId, state);
@@ -57,25 +55,25 @@ export async function executeGraphPersistent(
       }
 
       const duration = Date.now() - nodeStart;
-      observer?.onNodeComplete?.(state.currentNodeId, output, state.context, duration);
+      observer?.onNodeComplete?.(state.currentNodeId, output, duration);
 
       const nextEdge = graph.edges.find(
         edge => edge.from === state.currentNodeId &&
-          (!edge.condition || edge.condition(output, state.context))
+          (!edge.condition || edge.condition(output))
       );
 
       if (!nextEdge) {
-        observer?.onGraphComplete?.(output, state.context, Date.now() - state.startedAt);
+        observer?.onGraphComplete?.(output, Date.now() - state.startedAt);
         if (keepState) await clearGraphState(graphId);
         return output;
       }
 
-      state.currentNodeId = typeof nextEdge.to === "string" ? nextEdge.to : nextEdge.to(output, state.context);
+      state.currentNodeId = typeof nextEdge.to === "string" ? nextEdge.to : nextEdge.to(output);
       state.currentInput = output;
 
       if (keepState) await saveGraphState(graphId, state);
     } catch (err) {
-      observer?.onError?.(state.currentNodeId, err as Error, state.context);
+      observer?.onError?.(state.currentNodeId, err as Error);
       if (keepState) await saveGraphState(graphId, state);
       throw err;
     }

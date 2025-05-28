@@ -15,10 +15,10 @@ interface Agent {
 
 export type Observer = {
   onGraphStart?: (graphId: string, input: any) => void;
-  onNodeStart?: (nodeId: string, input: any, context: any) => void;
-  onNodeComplete?: (nodeId: string, output: any, context: any, durationMs: number) => void;
-  onError?: (nodeId: string, error: Error, context: any) => void;
-  onGraphComplete?: (output: any, context: any, durationMs: number) => void;
+  onNodeStart?: (nodeId: string, input: any) => void;
+  onNodeComplete?: (nodeId: string, output: any, durationMs: number) => void;
+  onError?: (nodeId: string, error: Error) => void;
+  onGraphComplete?: (output: any, durationMs: number) => void;
 };
 
 type NodeFn<T> = (input: T, cancelToken?: CancellationToken) => Promise<T> | T;
@@ -30,18 +30,18 @@ export interface CancellationTokenValue {
 
 export type CancellationToken = CancellationTokenValue | undefined
 
-export type GraphNode = {
+export type GraphNode<T> = {
   id: string;
-  run: (input: any, context: any, cancelToken: CancellationToken) => Promise<any> | any;
+  run: NodeFn<T>;
 };
 
 export type GraphEdge = {
   from: string;
-  to: string | ((output: any, context: any) => string);
-  condition?: (output: any, context: any) => boolean;
+  to: string | ((output: any) => string);
+  condition?: (output: any) => boolean;
 };
 
-type Graph = {
+export type Graph = {
   id: string;
   entryNode: string;
   nodes: Record<string, GraphNode>;
@@ -68,7 +68,36 @@ export type ExecuteOptions = {
 export type GraphExecutionState = {
   currentNodeId: string;
   currentInput: any;
-  context: any;
   completedNodes: string[];
   startedAt: number;
 };
+
+export type Tools = {
+  declarations: FunctionDeclaration[];
+  functions: Record<string, Function>;
+}
+
+export interface ToolProvider {
+  avalible(): string[];
+  getTools(...name: string[]): Tools | undefined;
+}
+
+export interface FocusFunctionProvider {
+  avalible(): string[];
+  getFocusFunction(name: string, id?: string, prompt?: string): FocusFunction
+}
+
+export interface NodeManifest {
+  id: string;
+  type: "agent" | "input";
+  memory?: string;
+  prompt?: string;
+  tools?: string[];
+}
+
+export interface GraphManifest {
+  id: string;
+  nodes: NodeManifest[];
+  edges: [string, string][]
+  entryNode: string;
+}
