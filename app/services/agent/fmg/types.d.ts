@@ -38,7 +38,7 @@ export type GraphNode<T> = {
 export type GraphEdge = {
   from: string;
   to: string | ((output: any) => string);
-  condition?: (output: any) => boolean;
+  hint?: string[]
 };
 
 export type Graph = {
@@ -51,7 +51,6 @@ export type Graph = {
   execute: (
     input: any,
     options?: ExecuteOptions,
-    initialContext?: any
   ) => Promise<any>;
 };
 

@@ -10,6 +10,7 @@ export function waitForUserInput(key: string): Promise<any> {
 }
 
 export function provideUserInput(key: string, value: any) {
+  console.log(JSON.stringify(pendingInputResolvers), "Pending input resolvers before resolving");
   const resolver = pendingInputResolvers[key];
   if (resolver) {
     resolver(value);

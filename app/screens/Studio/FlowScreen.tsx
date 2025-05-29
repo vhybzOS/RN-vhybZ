@@ -18,9 +18,7 @@ export const FlowScreen: FC<FlowScreenProps> = observer(function FlowScreen() {
 
   const graph = useGraph()
   return (
-    <Screen style={$root} preset="fixed">
-      {graph && graph.graph && <GraphView graph={graph.graph} />}
-    </Screen>
+    <GraphView graph={graph.graph} activeNode={graph.activeNode} state={graph.executionState} />
   )
 })
 

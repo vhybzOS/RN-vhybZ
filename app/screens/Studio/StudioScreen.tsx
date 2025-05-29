@@ -10,6 +10,8 @@ import { WebView } from 'react-native-webview';
 import { useNavigation } from "@react-navigation/native"
 import { useStores } from "app/models"
 import { useGraph } from "app/services/agent/GraphContext"
+import { provideUserInput } from "app/services/agent/fmg/input"
+import Chat from "app/components/Chat"
 
 interface StudioScreenProps extends AppStackScreenProps<"Studio"> { }
 
@@ -31,7 +33,7 @@ export const StudioScreen: FC<StudioScreenProps> = observer(function StudioScree
           title={""}
         />
         <Appbar.Action icon="alpha-f-circle" onPress={() => { navigation.navigate("Flow", undefined) }} />
-        <Appbar.Action icon="autorenew" onPress={resetHistory} />
+        <Appbar.Action icon="autorenew" onPress={() => graph.setThread([])} />
         <Appbar.Action icon="cog" onPress={() => {
           navigation.navigate("Config", undefined)
         }} />
@@ -41,6 +43,7 @@ export const StudioScreen: FC<StudioScreenProps> = observer(function StudioScree
       </Surface>
       }
       {graph.thread.length > 0 && graph.thread[graph.thread.length - 1].messages.length > 0 && <View style={[tw.flex, tw.pb10, tw.pl5, tw.pr5]}>
+        <Chat messages={graph.thread[graph.thread.length - 1].messages}></Chat>
         <WebView
           source={{ html: graph.thread[graph.thread.length - 1].messages[graph.thread[graph.thread.length - 1].messages.length - 1].parts[0].text || defaultPage }}
         />
@@ -51,8 +54,8 @@ export const StudioScreen: FC<StudioScreenProps> = observer(function StudioScree
           <Chip mode="outlined">Voice</Chip>
           <Chip mode="outlined">Camera</Chip>
         </View>
-        <ChatInput text={textInput} loading={loading} onTextChange={(val) => { setProp("textInput", val) }} onSendPress={() => graph.graph?.execute(textInput, undefined, graph.thread)}></ChatInput>
-      </Surface>
+        <ChatInput text={textInput} loading={loading} onTextChange={(val) => { setProp("textInput", val) }} onSendPress={() => { provideUserInput("id", textInput) }}></ChatInput>
+      </Surface >
     </>
   )
 })

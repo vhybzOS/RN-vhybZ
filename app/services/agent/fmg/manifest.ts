@@ -96,5 +96,8 @@ export class Manifest {
     return this.graph
   }
 
+  getNodeManifest(id: string): NodeManifest | undefined {
+    return this.manifest?.nodes.find(node => node.id === id);
+  }
 }
 

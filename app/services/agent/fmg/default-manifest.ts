@@ -19,9 +19,9 @@ response example:
 </html>
 \`\`\``,
     tools: ["createImage"],
-    memory: "session",
-  }, { type: "input", id: "input", prompt: "Please provide the user request for the HTML generation." }],
-  entryNode: "doc",
-  edges: []
+    memory: "conversion"
+  }, { type: "input", id: "docInput", prompt: "Please provide the user request for the HTML generation." }],
+  entryNode: "docInput",
+  edges: [["doc", "docInput"], ["docInput", "doc"]]
 }
 
