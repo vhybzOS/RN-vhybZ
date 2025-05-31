@@ -7,47 +7,27 @@ import { ReducedMessage, extractHtmlContent, reduceContentMessage } from 'app/ut
 import WebView from 'react-native-webview';
 import { Pressable, ScrollView } from 'react-native-gesture-handler';
 
-type ChatProps = {
-  messages: Content[];
+type FocusProps = {
+  content: Content;
 };
 
-const Chat = ({ messages }: ChatProps) => {
-
-  const renderBlob = (blob: ReducedMessage, index: number, isUser: boolean, key: number) => {
-    return (<Blob blob={blob} key={key} index={index} isUser={isUser}></Blob>)
-  };
-
-  const renderMessage = ({ item, index }: { item: Content, index: number }) => {
-    const isUser = item.role === 'user';
-    const blobs = reduceContentMessage(item);
-
-    return (
-      <View
-        style={[
-          styles.messageContainer,
-          { alignSelf: isUser ? 'flex-end' : 'flex-start' },
-        ]}
-      >
-        {blobs.map((blob, idx) => renderBlob(blob, idx, isUser, index))}
-      </View>
-    );
-  };
-
+export const FocusComponent = ({ content }: FocusProps) => {
+  const blobs = reduceContentMessage(content);
   return (
-    <FlashList
-      data={messages} // Reverse to show the latest message at the bottom
-      keyExtractor={(_, index) => index.toString()}
-      renderItem={renderMessage}
-      nestedScrollEnabled
-      estimatedItemSize={100}
-      contentContainerStyle={styles.container}
-    />
+    <View
+      style={[
+        styles.messageContainer,
+      ]}
+    >
+      {blobs.map((blob, idx) => <Blob blob={blob} index={idx} key={idx}></Blob>)}
+    </View>
   );
+
 };
 
 const styles = StyleSheet.create({
   container: {
-    padding: 0,
+    flex: 1
   },
   messageContainer: {
     marginVertical: 0,
@@ -72,16 +52,14 @@ const styles = StyleSheet.create({
 });
 
 interface BlobProps {
-  key: number;
-  index: number;
   blob: ReducedMessage;
-  isUser: boolean;
+  index: number;
 }
 
-const Blob: FC<BlobProps> = ({ key, index, blob, isUser }) => {
+const Blob: FC<BlobProps> = ({ index, blob }) => {
   const theme = useTheme();
-  const baseColor = isUser ? theme.colors.inverseSurface : theme.colors.surfaceVariant;
-  const textColor = isUser ? theme.colors.inverseOnSurface : theme.colors.onSurfaceVariant;
+  const baseColor = theme.colors.surfaceVariant;
+  const textColor = theme.colors.onSurfaceVariant;
   const [played, setPlayed] = React.useState<boolean>(true);
 
   switch (blob.type) {
@@ -137,4 +115,3 @@ const Blob: FC<BlobProps> = ({ key, index, blob, isUser }) => {
   }
 };
 
-export default Chat;

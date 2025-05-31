@@ -6,7 +6,7 @@ export type ReducedMessage =
   | { type: 'video'; content: string }
   | { type: 'html'; content: string };
 
-const htmlRegex = /<\s*(html|!doctype)\b[^>]*>/i;
+const htmlRegex = /(<\s*(html|!doctype)\b[^>]*>[\s\S]*?<\/html>)/i;
 
 export function reduceContentMessage(message: Content): ReducedMessage[] {
   const reduced: ReducedMessage[] = [];
@@ -17,7 +17,8 @@ export function reduceContentMessage(message: Content): ReducedMessage[] {
   for (const part of message.parts) {
     // If it's just a string or has a 'text' field
     if (part.text) {
-      if (htmlRegex.test(part.text)) {
+      const htmlMatch = htmlRegex.exec(part.text);
+      if (htmlMatch) {
         reduced.push({ type: 'html', content: part.text });
       } else {
         reduced.push({ type: 'text', content: part.text });
@@ -43,4 +44,12 @@ export function reduceContentMessage(message: Content): ReducedMessage[] {
   }
 
   return reduced;
+}
+
+export function extractHtmlContent(text: string): string | null {
+  const htmlMatch = htmlRegex.exec(text);
+  if (htmlMatch && htmlMatch.length > 0) {
+    return htmlMatch[0];
+  }
+  return null;
 }

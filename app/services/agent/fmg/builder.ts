@@ -1,5 +1,5 @@
-import { Graph, GraphNode, GraphEdge, NodeFn, Observer, ThreadItem, FocusFunction, FocusFunctionProvider, Tools, ToolProvider } from "./types";
-import { executeGraphPersistent } from "./graph-executor";
+import { Graph, GraphNode, GraphEdge, NodeFn, Observer, ThreadItem, FocusFunction, FocusFunctionProvider, Tools, ToolProvider, CancellationToken, ExecuteOptions } from "./types";
+import { CancellationTokenImp, executeGraphPersistent } from "./graph-executor";
 import { GeminiFocusFunctionProvider } from "./memory";
 import { GeminiToolProvider } from "./tools";
 import { GeminiAgent } from "./agent";
@@ -10,6 +10,7 @@ export class GraphBuilder {
   private edges: GraphEdge[] = [];
   private entryNode: string | null = null;
   private observer: Observer | undefined;
+  private cancelToken: CancellationToken = new CancellationTokenImp();
 
   setId(id: string) {
     this.id = id;
@@ -21,7 +22,7 @@ export class GraphBuilder {
   }
 
   addEdge(from: string, to: string, condition?: (output: any) => boolean): this {
-    this.edges.push({ from, to, condition });
+    this.edges.push({ from, to });
     return this;
   }
 
@@ -50,12 +51,31 @@ export class GraphBuilder {
       nodes: this.nodes,
       edges: this.edges,
       observer: this.observer,
-
-      async execute(input: string, undefined, thread: ThreadItem[]) {
+      async reset() {
+        if (self.cancelToken) {
+          self.cancelToken.cancel();
+          while (!self.cancelToken.isCancelled) {
+            await sleep(100);
+          }
+        }
+        self.cancelToken = new CancellationTokenImp();
         return executeGraphPersistent(
           self.build(), // rebuild to isolate runtime execution
-          input,
+          [],
           {
+            cancelToken: self.cancelToken,
+            graphId: self.id || "",
+          },
+          self.observer,
+        );
+      },
+      async execute(thread: ThreadItem[], options?: ExecuteOptions): Promise<void> {
+        return executeGraphPersistent(
+          self.build(), // rebuild to isolate runtime execution
+          thread,
+          {
+            ...options,
+            cancelToken: self.cancelToken,
             graphId: self.id || "",
           },
           self.observer,
@@ -120,3 +140,5 @@ export class GemeniAgentBuilder {
   }
 
 }
+
+const sleep = (delay: number) => new Promise((resolve) => setTimeout(resolve, delay))

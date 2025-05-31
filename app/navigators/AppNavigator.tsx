@@ -21,6 +21,7 @@ import { AppTabNavigator, AppTabParamList } from "./AppTabNavigator"
 import { navigationRef, useBackButtonHandler } from "./navigationUtilities"
 import { Appbar } from "react-native-paper"
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet"
+import { Content } from "@google/genai"
 
 /**
  * This type allows TypeScript to know what routes are defined in this navigator
@@ -43,6 +44,7 @@ export type AppStackParamList = {
   AppTabs: NavigatorScreenParams<AppTabParamList>
   Config: undefined
   Flow: undefined
+  Focus: { msg: Content }
 }
 
 /**
@@ -115,6 +117,7 @@ const AppStack = observer(function AppStack() {
           ),
         }}
         component={Screens.ConfigScreen} />
+      <Stack.Screen name="Focus" component={Screens.FocusScreen} />
       {/* IGNITE_GENERATOR_ANCHOR_APP_STACK_SCREENS */}
     </Stack.Navigator>
   )

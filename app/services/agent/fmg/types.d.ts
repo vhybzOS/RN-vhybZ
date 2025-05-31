@@ -25,7 +25,7 @@ type NodeFn<T> = (input: T, cancelToken?: CancellationToken) => Promise<T> | T;
 
 export interface CancellationTokenValue {
   cancel: () => void;
-  isCancelled: () => boolean;
+  isCancelled: boolean;
 }
 
 export type CancellationToken = CancellationTokenValue | undefined
@@ -48,6 +48,7 @@ export type Graph = {
   edges: GraphEdge[];
   observer: Observer | undefined;
 
+  reset: () => void;
   execute: (
     input: any,
     options?: ExecuteOptions,

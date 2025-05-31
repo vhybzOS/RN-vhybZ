@@ -1,6 +1,15 @@
-import { ExecuteOptions, Graph, GraphExecutionState, Observer } from "./types";
+import { CancellationToken, CancellationTokenValue, ExecuteOptions, Graph, GraphExecutionState, Observer } from "./types";
 import { loadGraphState, saveGraphState, clearGraphState } from "./storage-helper";
 
+export class CancellationTokenImp implements CancellationTokenValue {
+  private _isCancelled = false;
+  cancel() {
+    this._isCancelled = true;
+  }
+  get isCancelled() {
+    return this._isCancelled;
+  }
+}
 
 export async function executeGraphPersistent<T>(
   graph: Graph,
@@ -58,8 +67,8 @@ export async function executeGraphPersistent<T>(
       observer?.onNodeComplete?.(state.currentNodeId, output, duration);
 
       const nextEdge = graph.edges.find(
-        edge => edge.from === state.currentNodeId &&
-          (!edge.condition || edge.condition(output))
+        edge => edge.from === state.currentNodeId //&&
+        // (!edge.condition || edge.condition(output))
       );
 
       if (!nextEdge) {
