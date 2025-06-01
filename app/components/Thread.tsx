@@ -20,8 +20,16 @@ export const ThreadComponent = ({ thread }: ThreadProps) => {
   const navigation = useNavigation<AppNavigation>();
   const { runFrom } = useGraph();
 
-  const renderHeader = (name: string) => {
-    return (<List.Item key={name} title={name}></List.Item>)
+  const renderHeader = (name: string, index: number) => {
+    return (<List.Item key={name} title={name} right={props =>
+      <TouchableRipple onPress={() => {
+        console.log("Running from index", index, flatMessages.mapper[index]);
+        if (typeof flatMessages.mapper[index] === "number") {
+          runFrom(flatMessages.mapper[index])
+        }
+      }}>
+        <Icon source="arrow-u-left-bottom" size={25}></Icon>
+      </TouchableRipple>}></List.Item>);
   }
 
   const renderMessage = (item: Content, index: number) => {
@@ -40,13 +48,6 @@ export const ThreadComponent = ({ thread }: ThreadProps) => {
           blobs.map((blob, idx) => (
             <Blob key={idx} blob={blob} index={idx} isUser={isUser} actions={[
               {
-                icon: "arrow-u-left-bottom-bold",
-                onPress: () => {
-                  if (flatMessages.mapper[index] instanceof Array) {
-                    runFrom(...flatMessages.mapper[index])
-                  }
-                }
-              }, {
                 icon: "fullscreen",
                 onPress: () => {
                   navigation.navigate("Focus", { msg: item })
@@ -60,7 +61,7 @@ export const ThreadComponent = ({ thread }: ThreadProps) => {
 
   const renderItem = ({ item, index }: { item: Content | string, index: number }) => {
     if (typeof item === 'string') {
-      return renderHeader(item);
+      return renderHeader(item, index);
     }
     return renderMessage(item, index);
 

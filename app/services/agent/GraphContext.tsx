@@ -28,7 +28,7 @@ interface GraphContextType {
   setThread: React.Dispatch<React.SetStateAction<ThreadItem[]>>;
   activeNode: string | null;
   executionState?: ExecutionState;
-  runFrom: (ti: number, mi: number) => Promise<void>;
+  runFrom: (ti: number) => Promise<void>;
   reset: () => void;
 }
 export const GraphProvider = ({ children, apiKey }: GraphProviderProps) => {
@@ -70,14 +70,12 @@ export const GraphProvider = ({ children, apiKey }: GraphProviderProps) => {
       setExecutionState('error');
     }
   }
-  const runFrom = async (threadIdx: number, msgIdx: number) => {
+  const runFrom = async (threadIdx: number) => {
     if (!graph) {
       throw new Error("Graph is not initialized");
     }
     await graph?.cancel()
-    const ntd = thread.slice(0, threadIdx + 1);
-    console.log("Running from thread index:", threadIdx, "message index:", msgIdx);
-    ntd[threadIdx].messages = ntd[threadIdx].messages.slice(0, msgIdx + 1);
+    const ntd = thread.slice(0, threadIdx);
     setThread(ntd);
     graph.execute(ntd, { fromNodeId: thread[threadIdx].name })
   }
