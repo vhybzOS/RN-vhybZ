@@ -9,6 +9,7 @@ import { Pressable, ScrollView } from 'react-native-gesture-handler';
 import { ThreadItem } from 'app/services/agent';
 import { useNavigation } from '@react-navigation/native';
 import { AppNavigation } from 'app/navigators';
+import { useGraph } from 'app/services/agent/GraphContext';
 
 export type ThreadProps = {
   thread: ThreadItem[];
@@ -17,14 +18,11 @@ export type ThreadProps = {
 export const ThreadComponent = ({ thread }: ThreadProps) => {
 
   const navigation = useNavigation<AppNavigation>();
+  const { runFrom } = useGraph();
 
   const renderHeader = (name: string) => {
     return (<List.Item key={name} title={name}></List.Item>)
   }
-
-  const renderBlob = (blob: ReducedMessage, index: number, isUser: boolean) => {
-    return (<Blob key={index} blob={blob} index={index} isUser={isUser}></Blob>)
-  };
 
   const renderMessage = (item: Content, index: number) => {
     const isUser = item.role === 'user';
@@ -38,7 +36,24 @@ export const ThreadComponent = ({ thread }: ThreadProps) => {
           { alignSelf: isUser ? 'flex-end' : 'flex-start' },
         ]}
       >
-        {blobs.map((blob, idx) => renderBlob(blob, idx, isUser))}
+        {
+          blobs.map((blob, idx) => (
+            <Blob key={idx} blob={blob} index={idx} isUser={isUser} actions={[
+              {
+                icon: "arrow-u-left-bottom-bold",
+                onPress: () => {
+                  if (flatMessages.mapper[index] instanceof Array) {
+                    runFrom(...flatMessages.mapper[index])
+                  }
+                }
+              }, {
+                icon: "fullscreen",
+                onPress: () => {
+                  navigation.navigate("Focus", { msg: item })
+                }
+              }]} />
+          ))
+        }
       </View>
     );
   };
@@ -47,22 +62,25 @@ export const ThreadComponent = ({ thread }: ThreadProps) => {
     if (typeof item === 'string') {
       return renderHeader(item);
     }
-    return <Pressable key={index} onPress={() => navigation.navigate("Focus", { msg: item })}>{renderMessage(item, index)}</Pressable>;
+    return renderMessage(item, index);
 
   }
 
   const flatMessages = useMemo(() => {
     const flat: (Content | string)[] = [];
-    thread.forEach((i) => {
-      flat.push(i.name)
-      flat.push(...i.messages)
+    const mapper: (number | [number, number])[] = []
+    thread.forEach((item, tdi) => {
+      flat.push(item.name)
+      mapper.push(tdi)
+      flat.push(...item.messages)
+      mapper.push(...item.messages.map((_, index) => ([tdi, index] as [number, number])));
     })
-    return flat;
+    return { flat, mapper };
   }, [thread]);
 
   return (
     <FlashList
-      data={flatMessages} // Reverse to show the latest message at the bottom
+      data={flatMessages.flat} // Reverse to show the latest message at the bottom
       keyExtractor={(_, index) => index.toString()}
       renderItem={renderItem}
       nestedScrollEnabled
@@ -98,22 +116,39 @@ const styles = StyleSheet.create({
   },
 });
 
+type Action = {
+  icon: string;
+  onPress: () => void;
+}
+
 interface BlobProps {
   index: number;
   blob: ReducedMessage;
   isUser: boolean;
+  actions: Action[]
 }
 
-const Blob: FC<BlobProps> = ({ index, blob, isUser }) => {
+const Blob: FC<BlobProps> = ({ index, blob, isUser, actions }) => {
   const theme = useTheme();
   const baseColor = isUser ? theme.colors.inverseSurface : theme.colors.surfaceVariant;
   const textColor = isUser ? theme.colors.inverseOnSurface : theme.colors.onSurfaceVariant;
   const [played, setPlayed] = React.useState<boolean>(true);
 
+  const renderActions = (actions: Action[]) => {
+    return actions.map((action, idx) => (
+      <TouchableRipple key={idx} onPress={action.onPress}>
+        <Icon color={textColor} size={25} source={action.icon}></Icon>
+      </TouchableRipple>
+    ))
+  }
+
   switch (blob.type) {
     case 'text':
       return (
         <Card style={[styles.messageCard, { backgroundColor: baseColor }]} key={index}>
+          <Card.Actions>
+            {renderActions(actions || [])}
+          </Card.Actions>
           <Card.Content>
             <Text style={{ color: textColor }}>{blob.content}</Text>
           </Card.Content>
@@ -123,6 +158,9 @@ const Blob: FC<BlobProps> = ({ index, blob, isUser }) => {
     case 'image':
       return (
         <Card style={styles.mediaCard} key={index}>
+          <Card.Actions>
+            {renderActions(actions || [])}
+          </Card.Actions>
           <Image source={{ uri: blob.content }} style={styles.image} resizeMode="contain" />
         </Card>
       );
@@ -131,6 +169,7 @@ const Blob: FC<BlobProps> = ({ index, blob, isUser }) => {
       return (
         <Card style={[styles.messageCard, { backgroundColor: baseColor }]} key={index}>
           <Card.Actions>
+            {renderActions(actions || [])}
             <TouchableRipple onPress={() => { setPlayed(!played) }}>
               <Icon size={25} source={played ? "stop-circle" : "play-circle"}></Icon>
             </TouchableRipple>
@@ -152,6 +191,9 @@ const Blob: FC<BlobProps> = ({ index, blob, isUser }) => {
     case 'video':
       return (
         <Card style={[styles.messageCard]} key={index}>
+          <Card.Actions>
+            {renderActions(actions || [])}
+          </Card.Actions>
           <Card.Content>
             <Text>[Video content not rendered]</Text>
           </Card.Content>

@@ -1,6 +1,7 @@
 import React, { ReactNode, createContext, useContext, useEffect } from 'react';
 import { Observer, ThreadItem, Graph } from './fmg/types';
 import { Manifest } from './fmg/manifest';
+import { load, save } from 'app/utils/storage';
 
 
 
@@ -27,6 +28,8 @@ interface GraphContextType {
   setThread: React.Dispatch<React.SetStateAction<ThreadItem[]>>;
   activeNode: string | null;
   executionState?: ExecutionState;
+  runFrom: (ti: number, mi: number) => Promise<void>;
+  reset: () => void;
 }
 export const GraphProvider = ({ children, apiKey }: GraphProviderProps) => {
   const manifest = new Manifest();
@@ -35,6 +38,14 @@ export const GraphProvider = ({ children, apiKey }: GraphProviderProps) => {
   const [executionState, setExecutionState] = React.useState<ExecutionState>('idle');
   const [activeNode, setActiveNode] = React.useState<string | null>(null);
 
+
+  const reset = () => {
+    setThread([])
+    graph?.reset();
+  }
+
+
+
   const observer: Observer = {
     onGraphStart(graphId, input) {
       console.log("Graph started", graphId, input);
@@ -42,13 +53,13 @@ export const GraphProvider = ({ children, apiKey }: GraphProviderProps) => {
     },
     onNodeStart(nodeId, input) {
       console.log("Node started", nodeId, input);
-      setThread(input as ThreadItem[]);
       setExecutionState('running');
       setActiveNode(nodeId);
     },
     onNodeComplete(nodeId, output, durationMs) {
       console.log("Node onNodeComplete", nodeId, JSON.stringify(output), durationMs);
       setThread(output as ThreadItem[]);
+      save("thread", { nodeId, output })
       setActiveNode(null);
     },
     onGraphComplete(output, durationMs) {
@@ -59,17 +70,36 @@ export const GraphProvider = ({ children, apiKey }: GraphProviderProps) => {
       setExecutionState('error');
     }
   }
+  const runFrom = async (threadIdx: number, msgIdx: number) => {
+    if (!graph) {
+      throw new Error("Graph is not initialized");
+    }
+    await graph?.cancel()
+    const ntd = thread.slice(0, threadIdx + 1);
+    console.log("Running from thread index:", threadIdx, "message index:", msgIdx);
+    ntd[threadIdx].messages = ntd[threadIdx].messages.slice(0, msgIdx + 1);
+    setThread(ntd);
+    graph.execute(ntd, { fromNodeId: thread[threadIdx].name })
+  }
   useEffect(() => {
     if (apiKey) {
       manifest.setApiKey(apiKey);
-      manifest.load(observer).then((g) => {
-        g.execute([])
-        setGraph(g);
-      }).catch(e => { console.error("Error loading graph manifest:", e); });
+      Promise.all([manifest.load(observer), load("thread") as Promise<{ nodeId: string, output: ThreadItem[] }>]).then(([graphResult, threadResult]) => {
+        if (threadResult) {
+          const { nodeId, output } = threadResult
+          graphResult.execute(output as ThreadItem[] || [], { fromNodeId: nodeId })
+          setGraph(graphResult);
+          setThread(output as ThreadItem[] || []);
+        } else {
+          graphResult.execute([])
+          setThread([])
+        }
+      }).catch(e => { console.error("Error loading graph manifest:", e); })
+
     }
   }, [apiKey]);
   return (
-    <GraphContext.Provider value={{ graph, setGraph, thread, setThread, activeNode, executionState }}>
+    <GraphContext.Provider value={{ graph, setGraph, thread, setThread, activeNode, executionState, runFrom, reset }}>
       {children}
     </GraphContext.Provider>
   )

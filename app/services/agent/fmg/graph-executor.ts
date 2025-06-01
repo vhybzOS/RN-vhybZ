@@ -67,9 +67,9 @@ export async function executeGraphPersistent<T>(
       observer?.onNodeComplete?.(state.currentNodeId, output, duration);
 
       const nextEdge = graph.edges.find(
-        edge => edge.from === state.currentNodeId //&&
-        // (!edge.condition || edge.condition(output))
+        edge => edge.from === state.currentNodeId
       );
+
 
       if (!nextEdge) {
         observer?.onGraphComplete?.(output, Date.now() - state.startedAt);

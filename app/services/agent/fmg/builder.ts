@@ -21,7 +21,7 @@ export class GraphBuilder {
     return this;
   }
 
-  addEdge(from: string, to: string, condition?: (output: any) => boolean): this {
+  addEdge(from: string, to: string | ((output: any) => string)) {
     this.edges.push({ from, to });
     return this;
   }
@@ -51,7 +51,7 @@ export class GraphBuilder {
       nodes: this.nodes,
       edges: this.edges,
       observer: this.observer,
-      async reset() {
+      async cancel(): Promise<void> {
         if (self.cancelToken) {
           self.cancelToken.cancel();
           while (!self.cancelToken.isCancelled) {
@@ -59,6 +59,9 @@ export class GraphBuilder {
           }
         }
         self.cancelToken = new CancellationTokenImp();
+      },
+      async reset() {
+        await this.cancel();
         return executeGraphPersistent(
           self.build(), // rebuild to isolate runtime execution
           [],
@@ -69,7 +72,7 @@ export class GraphBuilder {
           self.observer,
         );
       },
-      async execute(thread: ThreadItem[], options?: ExecuteOptions): Promise<void> {
+      async execute(thread: ThreadItem[], options?: Partial<ExecuteOptions>): Promise<void> {
         return executeGraphPersistent(
           self.build(), // rebuild to isolate runtime execution
           thread,

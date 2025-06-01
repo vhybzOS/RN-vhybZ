@@ -23,5 +23,4 @@ export function makeInputNode(id: string, prompt?: string): NodeFn<ThreadItem[]>
     const userInput = await waitForUserInput("id");
     return [...ctx, { name: id, messages: [createUserContent(userInput)] }];
   }
-
 }

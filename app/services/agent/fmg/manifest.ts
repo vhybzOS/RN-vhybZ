@@ -5,6 +5,7 @@ import { GeminiToolProvider } from "./tools";
 import { FocusFunctionProvider, ToolProvider, NodeManifest, GraphManifest, Graph, Observer } from "./types";
 import { HtmlGeneratorManifest } from "./default-manifest";
 import { makeInputNode } from "./input";
+import { makeEdge } from "./edge";
 
 export class Manifest {
   private apiKey: string | undefined;
@@ -52,7 +53,8 @@ export class Manifest {
     if (observer) {
       graphBuilder.setObserver(observer);
     }
-    manifest.edges.forEach(edge => {
+    manifest.edges.forEach(e => {
+      const edge = makeEdge(e[0], e[1]);
       graphBuilder.addEdge(edge[0], edge[1]);
     })
     return graphBuilder.build();

@@ -33,7 +33,7 @@ export const StudioScreen: FC<StudioScreenProps> = observer(function StudioScree
           title={""}
         />
         <Appbar.Action icon="alpha-f-circle" onPress={() => { navigation.navigate("Flow", undefined) }} />
-        <Appbar.Action icon="autorenew" onPress={() => graph.graph?.reset()} />
+        <Appbar.Action icon="autorenew" onPress={() => graph.reset()} />
         <Appbar.Action icon="cog" onPress={() => {
           navigation.navigate("Config", undefined)
         }} />

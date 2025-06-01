@@ -48,10 +48,11 @@ export type Graph = {
   edges: GraphEdge[];
   observer: Observer | undefined;
 
+  cancel: () => Promise<void>;
   reset: () => void;
   execute: (
     input: any,
-    options?: ExecuteOptions,
+    options?: Partial<ExecuteOptions>,
   ) => Promise<any>;
 };
 
