@@ -12,12 +12,8 @@ export function makeEdge(from: string, to: string): [string, string | ((output: 
       case "contains":
         return [from, (output: ThreadItem[]) => {
           console.log("Checking for contains condition");
-          const td = currentThread(output);
-          const tdf = td.filter(i => i.name === from)
-          if (tdf.length === 0) {
-            throw new Error(`Node ${from} not found in the thread`);
-          }
-          const lastMsg = td[0].messages.at(-1)
+          const lastMsg = output.at(-1)?.messages.at(-1)
+          console.log("Last message:", lastMsg);
           if (lastMsg && lastMsg.parts) {
             for (const part of lastMsg.parts) {
               if (part.text?.includes(tokens[1])) {

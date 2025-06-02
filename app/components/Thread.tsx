@@ -70,11 +70,16 @@ export const ThreadComponent = ({ thread }: ThreadProps) => {
   const flatMessages = useMemo(() => {
     const flat: (Content | string)[] = [];
     const mapper: (number | [number, number])[] = []
+    const zip: boolean = true;
     thread.forEach((item, tdi) => {
+      let msgs = item.messages.slice()
+      if (zip && msgs.length > 0) {
+        msgs = msgs.slice(msgs.length - 1, msgs.length);
+      }
       flat.push(item.name)
       mapper.push(tdi)
-      flat.push(...item.messages)
-      mapper.push(...item.messages.map((_, index) => ([tdi, index] as [number, number])));
+      flat.push(...msgs)
+      mapper.push(...msgs.map((_, index) => ([tdi, index] as [number, number])));
     })
     return { flat, mapper };
   }, [thread]);

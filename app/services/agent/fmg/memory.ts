@@ -38,12 +38,23 @@ export class GeminiFocusFunctionProvider implements FocusFunctionProvider {
         throw new Error("ID is required for conversion focus function");
       }
       return async (ctx: ThreadItem[]) => {
-        let lastestInput = latest(latest(ctx.filter(i => i.name?.startsWith(id) && i.name?.endsWith("Input")))?.messages);
+        let lastestInput = ctx.at(-1)?.messages.at(-1);
         let latestThread = latest(ctx.filter(i => i.name === id))
         if (latestThread && latestThread.messages.length > 0) {
-          return [...latestThread.messages, lastestInput || createModelContent(prompt || "No input provided")];
+          const contetnt = [...latestThread.messages];
+          if (lastestInput && lastestInput.parts) {
+            contetnt.push(createUserContent(lastestInput.parts));
+          }
+          return contetnt
         }
-        return [createModelContent(prompt || "No input provided"), lastestInput || createUserContent("no input")];
+        const content: Content[] = []
+        if (prompt) {
+          content.push(createModelContent(prompt));
+        }
+        if (lastestInput && lastestInput.parts) {
+          content.push(createUserContent(lastestInput.parts));
+        }
+        return content;
       }
     }
     throw new Error(`Unknown focus function type: ${type}`);

@@ -102,3 +102,5 @@ export interface GraphManifest {
   edges: [string, string][]
   entryNode: string;
 }
+
+export type PromptFunction = (name: string, parameters: Record<string, any>) => string;

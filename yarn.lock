@@ -6530,6 +6530,11 @@ mst-form-type@^2.1.0:
   resolved "https://registry.yarnpkg.com/mst-form-type/-/mst-form-type-2.1.0.tgz#94aaf11978b5ce66f4501f9cb2894723895f7163"
   integrity sha512-VTbp5P0Kmwyyt9qptEbK3OCr0LRGNAPohvGgq8S+pcxuMWHu3TRLbVfVZuE9OT6pYspNXx/ciohTTmZkmHB6bQ==
 
+mustache@^4.2.0:
+  version "4.2.0"
+  resolved "https://registry.yarnpkg.com/mustache/-/mustache-4.2.0.tgz#e5892324d60a12ec9c2a73359edca52972bf6f64"
+  integrity sha512-71ippSywq5Yb7/tVYyGbkBggbU8H3u5Rz56fH60jGFgr8uHwxs+aSKeqmluIVzM0m0kB7xQjKS6qPfd0b2ZoqQ==
+
 mz@^2.7.0:
   version "2.7.0"
   resolved "https://registry.yarnpkg.com/mz/-/mz-2.7.0.tgz#95008057a56cafadc2bc63dde7f9ff6955948e32"
