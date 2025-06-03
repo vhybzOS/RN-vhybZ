@@ -1,11 +1,14 @@
 import { Content, createModelContent, createUserContent } from "@google/genai";
-import { FocusFunction, FocusFunctionProvider, ThreadItem } from "./types";
+import { FocusFunction, FocusFunctionProvider, Prompt, PromptProvider, ThreadItem } from "./types";
+import { getPrompt } from "./prompt";
 
 export class GeminiFocusFunctionProvider implements FocusFunctionProvider {
   avalible(): string[] {
     return ["session", "all", "conversion"]
   }
-  getFocusFunction(type: string, id?: string, prompt?: string): FocusFunction {
+  getFocusFunction(type: string, id?: string, promptFn?: Prompt): FocusFunction {
+    let prompt: undefined | string = undefined
+
     if (type == "all") {
       return async (ctx: ThreadItem[] | undefined) => {
         if (ctx === undefined || ctx.length === 0) {
@@ -15,8 +18,8 @@ export class GeminiFocusFunctionProvider implements FocusFunctionProvider {
         ctx.forEach((i) => {
           return acc.concat(i.messages)
         })
-        if (prompt) {
-          acc.push(createModelContent(prompt))
+        if (promptFn) {
+          acc.push(createModelContent(await getPrompt(promptFn)))
         }
         return Promise.resolve(acc)
       }
@@ -48,8 +51,8 @@ export class GeminiFocusFunctionProvider implements FocusFunctionProvider {
           return contetnt
         }
         const content: Content[] = []
-        if (prompt) {
-          content.push(createModelContent(prompt));
+        if (promptFn) {
+          content.push(createModelContent(await getPrompt(promptFn)));
         }
         if (lastestInput && lastestInput.parts) {
           content.push(createUserContent(lastestInput.parts));

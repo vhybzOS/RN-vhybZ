@@ -1,5 +1,6 @@
 import { Content, GenerateContentResponse } from "@google/genai";
 import { Graph as glGraph } from "graphlib"
+import { string } from "mobx-state-tree/dist/internal";
 
 export type ThreadItem = {
   name: string
@@ -85,7 +86,7 @@ export interface ToolProvider {
 
 export interface FocusFunctionProvider {
   avalible(): string[];
-  getFocusFunction(name: string, id?: string, prompt?: string): FocusFunction
+  getFocusFunction(name: string, id?: string, prompt?: Prompt): FocusFunction
 }
 
 export interface NodeManifest {
@@ -103,4 +104,6 @@ export interface GraphManifest {
   entryNode: string;
 }
 
-export type PromptFunction = (name: string, parameters: Record<string, any>) => string;
+export type Prompt = string | ((params?: Record<string, any>) => string | Promise<string>)
+
+export type PromptProvider = (name: string) => string | Prompt;

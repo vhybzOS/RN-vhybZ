@@ -1,8 +1,9 @@
-import { Graph, GraphNode, GraphEdge, NodeFn, Observer, ThreadItem, FocusFunction, FocusFunctionProvider, Tools, ToolProvider, CancellationToken, ExecuteOptions } from "./types";
+import { Graph, GraphNode, GraphEdge, NodeFn, Observer, ThreadItem, FocusFunction, FocusFunctionProvider, Tools, ToolProvider, CancellationToken, ExecuteOptions, PromptProvider, Prompt } from "./types";
 import { CancellationTokenImp, executeGraphPersistent } from "./graph-executor";
 import { GeminiFocusFunctionProvider } from "./memory";
 import { GeminiToolProvider } from "./tools";
 import { GeminiAgent } from "./agent";
+import { makePrompt } from "./prompt";
 
 export class GraphBuilder {
   private id: string | undefined;
@@ -93,11 +94,11 @@ export class GemeniAgentBuilder {
   toolProvider: ToolProvider = new GeminiToolProvider()
   memoryName: string | undefined
   tools: Tools | undefined
-  prompt: string | undefined
+  prompt: Prompt | undefined
   id: string | undefined
   private apiKey: string | undefined
 
-  constructor(mp: FocusFunctionProvider = new GeminiFocusFunctionProvider(), tp: ToolProvider = new GeminiToolProvider()) {
+  constructor(mp: FocusFunctionProvider = new GeminiFocusFunctionProvider(), tp: ToolProvider = new GeminiToolProvider(), pp: PromptProvider = makePrompt) {
     this.memoryProvider = mp;
     this.toolProvider = tp;
   }
@@ -119,7 +120,7 @@ export class GemeniAgentBuilder {
   }
 
   setPrompt(prompt: string) {
-    this.prompt = prompt;
+    this.prompt = makePrompt(prompt)
   }
 
   build(): NodeFn<ThreadItem[]> {
