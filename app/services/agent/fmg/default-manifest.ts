@@ -12,13 +12,26 @@ export const HtmlGeneratorManifest: GraphManifest = {
     },
     {
       type: "agent",
+      id: "davici",
+      prompt: "davici",
+      memory: "conversion"
+    },
+    {
+      type: "agent",
       id: "doc",
       prompt: 'jose',
       tools: ["createImage"],
       memory: "conversion"
-    }, { type: "input", id: "jodiInput" }, { type: "input", id: "docInput" }],
+    }, { type: "input", id: "jodiInput" },
+    { type: "input", id: "docInput" },
+    { type: "input", id: "daviciInput" }
+  ],
   entryNode: "jodiInput",
-  edges: [["doc", "docInput"], ["docInput", "doc"], ["jodi", "contains:LETS BUILD!doc?jodiInput"], ["jodiInput", "jodi"]]
+  edges: [
+    ["doc", "docInput"], ["docInput", "doc"],
+    ["jodi", "contains:LETS BUILD!davici?jodiInput"], ["jodiInput", "jodi"],
+    ["daviciInput", "davici"], ["davici", "daviciInput"],
+  ]
 }
 
 

@@ -17,7 +17,7 @@ interface Agent {
 export type Observer = {
   onGraphStart?: (graphId: string, input: any) => void;
   onNodeStart?: (nodeId: string, input: any) => void;
-  onNodeComplete?: (nodeId: string, output: any, durationMs: number) => void;
+  onNodeComplete?: (nodeId: string, output: any, durationMs: number, next?: string) => void;
   onError?: (nodeId: string, error: Error) => void;
   onGraphComplete?: (output: any, durationMs: number) => void;
 };

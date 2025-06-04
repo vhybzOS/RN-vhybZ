@@ -87,10 +87,10 @@ const Blob: FC<BlobProps> = ({ index, blob }) => {
               <Icon size={25} source={played ? "stop-circle" : "play-circle"}></Icon>
             </TouchableRipple>
           </Card.Actions>
-          <Card.Content style={{ maxHeight: 300 }}>
+          <Card.Content style={{ flex: 1 }}>
             <ScrollView>
               {played ?
-                <WebView style={{ height: 300 }}
+                <WebView style={{ height: 600, }}
                   injectedJavaScript="window.alert = '';"
                   source={{ html: extractHtmlContent(blob.content) || "" }}
                 /> :

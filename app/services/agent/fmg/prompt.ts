@@ -6,7 +6,8 @@ import mustache from 'mustache';
 
 const promptMap: Record<string, number> = {
   jodi: require('assets/prompts/jodi.md'),
-  jose: require('assets/prompts/jose.md')
+  jose: require('assets/prompts/jose.md'),
+  davici: require('assets/prompts/davici.md'),
 };
 
 export async function loadMarkdown(name: string): Promise<string> {

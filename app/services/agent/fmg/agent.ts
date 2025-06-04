@@ -1,4 +1,4 @@
-import { Content, FunctionCallingConfigMode, GoogleGenAI, createModelContent, createPartFromFunctionResponse } from "@google/genai";
+import { Content, FunctionCallingConfigMode, GenerateContentConfig, GoogleGenAI, createModelContent, createPartFromFunctionResponse } from "@google/genai";
 import { Agent, FocusFunction, ThreadItem, Tools } from "./types";
 
 
@@ -38,10 +38,9 @@ export class GeminiAgent implements Agent {
     }
 
 
-    const response = await this.genAI.models.generateContent({
-      model: 'gemini-2.0-flash-001',
-      contents: tdi.messages,
-      config: {
+    let gc: GenerateContentConfig | undefined = undefined
+    if (this.tools && this.tools.declarations.length > 0) {
+      gc = {
         toolConfig: {
           functionCallingConfig: {
             mode: FunctionCallingConfigMode.AUTO,
@@ -50,6 +49,12 @@ export class GeminiAgent implements Agent {
         },
         tools: [{ functionDeclarations: this.tools?.declarations }]
       }
+    }
+
+    const response = await this.genAI.models.generateContent({
+      model: 'gemini-2.0-flash-001',
+      contents: tdi.messages,
+      config: gc,
     })
     if (response.candidates && response.candidates.length > 0 && response.candidates[0].content) {
       tdi.messages.push(response.candidates[0].content)

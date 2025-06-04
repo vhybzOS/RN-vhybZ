@@ -1,5 +1,6 @@
 import { CancellationToken, CancellationTokenValue, ExecuteOptions, Graph, GraphExecutionState, Observer } from "./types";
 import { loadGraphState, saveGraphState, clearGraphState } from "./storage-helper";
+import { delay } from "app/utils/delay";
 
 export class CancellationTokenImp implements CancellationTokenValue {
   private _isCancelled = false;
@@ -43,6 +44,7 @@ export async function executeGraphPersistent<T>(
   }
 
   while (state.currentNodeId) {
+    await delay(100)
     if (cancelToken?.isCancelled) {
       console.log(`[Execution Canceled] at node ${state.currentNodeId}`);
       if (keepState) await saveGraphState(graphId, state);
@@ -64,14 +66,13 @@ export async function executeGraphPersistent<T>(
       }
 
       const duration = Date.now() - nodeStart;
-      observer?.onNodeComplete?.(state.currentNodeId, output, duration);
 
       const nextEdge = graph.edges.find(
         edge => edge.from === state.currentNodeId
       );
 
-
       if (!nextEdge) {
+        observer?.onNodeComplete?.(state.currentNodeId, output, duration);
         observer?.onGraphComplete?.(output, Date.now() - state.startedAt);
         if (keepState) await clearGraphState(graphId);
         return output;
@@ -79,6 +80,9 @@ export async function executeGraphPersistent<T>(
 
       state.currentNodeId = typeof nextEdge.to === "string" ? nextEdge.to : nextEdge.to(output);
       state.currentInput = output;
+
+
+      observer?.onNodeComplete?.(state.currentNodeId, output, duration, state.currentNodeId);
 
       if (keepState) await saveGraphState(graphId, state);
     } catch (err) {

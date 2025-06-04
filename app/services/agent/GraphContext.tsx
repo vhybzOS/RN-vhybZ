@@ -56,10 +56,10 @@ export const GraphProvider = ({ children, apiKey }: GraphProviderProps) => {
       setExecutionState('running');
       setActiveNode(nodeId);
     },
-    onNodeComplete(nodeId, output, durationMs) {
+    onNodeComplete(nodeId, output, durationMs, next) {
       console.log("Node onNodeComplete", nodeId, JSON.stringify(output), durationMs);
       setThread(output as ThreadItem[]);
-      save("thread", { nodeId, output })
+      save("thread", { nodeId, output, next })
       setActiveNode(null);
     },
     onGraphComplete(output, durationMs) {
@@ -82,10 +82,10 @@ export const GraphProvider = ({ children, apiKey }: GraphProviderProps) => {
   useEffect(() => {
     if (apiKey) {
       manifest.setApiKey(apiKey);
-      Promise.all([manifest.load(observer), load("thread") as Promise<{ nodeId: string, output: ThreadItem[] }>]).then(([graphResult, threadResult]) => {
+      Promise.all([manifest.load(observer), load("thread") as Promise<{ nodeId: string, output: ThreadItem[], next: string }>]).then(([graphResult, threadResult]) => {
         if (threadResult) {
-          const { nodeId, output } = threadResult
-          graphResult.execute(output as ThreadItem[] || [], { fromNodeId: nodeId })
+          const { nodeId, output, next } = threadResult
+          graphResult.execute(output as ThreadItem[] || [], { fromNodeId: next })
           setGraph(graphResult);
           setThread(output as ThreadItem[] || []);
         } else {
