@@ -107,3 +107,13 @@ export interface GraphManifest {
 export type Prompt = string | ((params?: Record<string, any>) => string | Promise<string>)
 
 export type PromptProvider = (name: string) => string | Prompt;
+
+export type RetryOptions = {
+  retries: number;                              // Max retry attempts
+  baseDelay?: number;                           // Initial delay in ms (default: 100)
+  maxDelay?: number;                            // Max delay cap in ms (default: 10000)
+  timeout?: number;                             // Total time budget in ms
+  jitter?: boolean;                             // Add randomness to backoff
+  shouldRetry?: (error: unknown) => boolean;    // Error filter
+};
+

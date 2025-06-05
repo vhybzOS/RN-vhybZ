@@ -17,9 +17,9 @@ export function reduceContentMessage(message: Content): ReducedMessage[] {
   for (const part of message.parts) {
     // If it's just a string or has a 'text' field
     if (part.text) {
-      const htmlMatch = htmlRegex.exec(part.text);
+      const htmlMatch = htmlRegex.test(part.text);
       if (htmlMatch) {
-        reduced.push({ type: 'html', content: part.text });
+        reduced.push(...extractHtmlContent(part.text));
       } else {
         reduced.push({ type: 'text', content: part.text });
       }
@@ -46,10 +46,44 @@ export function reduceContentMessage(message: Content): ReducedMessage[] {
   return reduced;
 }
 
-export function extractHtmlContent(text: string): string | null {
-  const htmlMatch = htmlRegex.exec(text);
-  if (htmlMatch && htmlMatch.length > 0) {
-    return htmlMatch[0];
+
+
+function extractHtmlContent(text: string): ReducedMessage[] {
+  const parts: ReducedMessage[] = [];
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  // Make sure regex has the global flag
+  const htmlRegex = /(<\s*(html|!doctype)\b[^>]*>[\s\S]*?<\/html>)/i;
+
+  while ((match = htmlRegex.exec(text)) !== null) {
+    const start = match.index;
+    const end = htmlRegex.lastIndex;
+
+    // Add unmatched part before the match
+    if (start > lastIndex) {
+      parts.push({
+        content: text.slice(lastIndex, start),
+        type: "text",
+      });
+    }
+
+    // Add the matched part
+    parts.push({
+      content: match[0],
+      type: "html",
+    });
+
+    lastIndex = end;
   }
-  return null;
+
+  // Add remaining unmatched part after last match
+  if (lastIndex < text.length) {
+    parts.push({
+      content: text.slice(lastIndex),
+      type: "text",
+    });
+  }
+
+  return parts;
 }

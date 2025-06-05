@@ -14,6 +14,7 @@ export const HtmlGeneratorManifest: GraphManifest = {
       type: "agent",
       id: "davici",
       prompt: "davici",
+      tools: ["createImage"],
       memory: "conversion"
     },
     {

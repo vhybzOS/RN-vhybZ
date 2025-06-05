@@ -64,6 +64,14 @@ export class GeminiFocusFunctionProvider implements FocusFunctionProvider {
   }
 }
 
+export const fnMemory: FocusFunction = (thread: ThreadItem[]) => {
+  const msgs = thread.at(-1)?.messages
+  if (!msgs) {
+    throw Error("function call can not be empty")
+  }
+  return Promise.resolve(msgs)
+}
+
 function latest<T>(arr: Array<T> | undefined): T | undefined {
   if (!arr || arr.length === 0) {
     return undefined;

@@ -1,9 +1,9 @@
 import React, { FC, useMemo } from 'react';
 import { View, Image, StyleSheet } from 'react-native';
-import { Card, Icon, IconButton, List, Text, TouchableRipple, useTheme } from 'react-native-paper';
+import { Appbar, Card, Icon, IconButton, List, Text, TouchableRipple, useTheme } from 'react-native-paper';
 import { FlashList } from '@shopify/flash-list';
 import type { Content } from '@google/genai';
-import { ReducedMessage, extractHtmlContent, reduceContentMessage } from 'app/utils/contentHelpers.';
+import { ReducedMessage, reduceContentMessage } from 'app/utils/contentHelpers.';
 import WebView from 'react-native-webview';
 import { Pressable, ScrollView } from 'react-native-gesture-handler';
 import { ThreadItem } from 'app/services/agent';
@@ -45,15 +45,13 @@ export const ThreadComponent = ({ thread }: ThreadProps) => {
         ]}
       >
         {
-          blobs.map((blob, idx) => (
-            <Blob key={idx} blob={blob} index={idx} isUser={isUser} actions={[
-              {
-                icon: "fullscreen",
-                onPress: () => {
-                  navigation.navigate("Focus", { msg: item })
-                }
-              }]} />
-          ))
+          <Blob blobs={blobs} isUser={isUser} actions={[
+            {
+              icon: "fullscreen",
+              onPress: () => {
+                navigation.navigate("Focus", { msg: item })
+              }
+            }]} />
         }
       </View>
     );
@@ -128,13 +126,12 @@ type Action = {
 }
 
 interface BlobProps {
-  index: number;
-  blob: ReducedMessage;
+  blobs: ReducedMessage[];
   isUser: boolean;
   actions: Action[]
 }
 
-const Blob: FC<BlobProps> = ({ index, blob, isUser, actions }) => {
+const Blob: FC<BlobProps> = ({ blobs, isUser, actions }) => {
   const theme = useTheme();
   const baseColor = isUser ? theme.colors.inverseSurface : theme.colors.surfaceVariant;
   const textColor = isUser ? theme.colors.inverseOnSurface : theme.colors.onSurfaceVariant;
@@ -147,68 +144,61 @@ const Blob: FC<BlobProps> = ({ index, blob, isUser, actions }) => {
       </TouchableRipple>
     ))
   }
+  const renderBlobs = (blobs: ReducedMessage[]) => {
+    return blobs.map((blob, index) => {
+      switch (blob.type) {
+        case 'text':
+          return (
+            <Text style={{ color: textColor }} key={index}>{blob.content}</Text>
+          );
 
-  switch (blob.type) {
-    case 'text':
-      return (
-        <Card style={[styles.messageCard, { backgroundColor: baseColor }]} key={index}>
-          <Card.Actions>
-            {renderActions(actions || [])}
-          </Card.Actions>
-          <Card.Content>
-            <Text style={{ color: textColor }}>{blob.content}</Text>
-          </Card.Content>
-        </Card>
-      );
+        case 'image':
+          return (
+            <Image source={{ uri: blob.content }} style={styles.image} resizeMode="contain" key={index} />
+          );
 
-    case 'image':
-      return (
-        <Card style={styles.mediaCard} key={index}>
-          <Card.Actions>
-            {renderActions(actions || [])}
-          </Card.Actions>
-          <Image source={{ uri: blob.content }} style={styles.image} resizeMode="contain" />
-        </Card>
-      );
+        case 'html':
+          return (
+            <View key={index}>
+              <Appbar >
+                <Appbar.Action
+                  onPress={() => { setPlayed(!played) }}
+                  icon={played ? "play-circle" : "stop-circle"}
+                ></Appbar.Action>
+              </Appbar>
 
-    case 'html':
-      return (
-        <Card style={[styles.messageCard, { backgroundColor: baseColor }]} key={index}>
-          <Card.Actions>
-            {renderActions(actions || [])}
-            <TouchableRipple onPress={() => { setPlayed(!played) }}>
-              <Icon size={25} source={played ? "stop-circle" : "play-circle"}></Icon>
-            </TouchableRipple>
-          </Card.Actions>
-          <Card.Content style={{ maxHeight: 300 }}>
-            <ScrollView>
-              {played ?
-                <WebView style={{ height: 300 }}
-                  injectedJavaScript="window.alert = '';"
-                  source={{ html: extractHtmlContent(blob.content) || "" }}
-                /> :
-                <Text style={{ color: textColor }}>{blob.content}</Text>
-              }
-            </ScrollView>
-          </Card.Content>
-        </Card >
-      );
+              {/* {played ? */}
+              {/*   <> */}
+              {/*     <WebView style={{ height: 300 }} */}
+              {/*       injectedJavaScript="window.alert = '';" */}
+              {/*       source={{ html: blob.content || "" }} */}
+              {/*     /> </> : */}
+              <Text style={{ color: textColor }}>{blob.content}</Text>
+              {/* } */}
+            </View>
+          );
 
-    case 'video':
-      return (
-        <Card style={[styles.messageCard]} key={index}>
-          <Card.Actions>
-            {renderActions(actions || [])}
-          </Card.Actions>
-          <Card.Content>
-            <Text>[Video content not rendered]</Text>
-          </Card.Content>
-        </Card>
-      );
+        case 'video':
+          return (
+            <Text key={index}>[Video content not rendered]</Text>
+          );
 
-    default:
-      return null;
+        default:
+          return null;
+      }
+    })
   }
+  return (
+    <Card style={[styles.messageCard, { backgroundColor: baseColor }]}>
+      <Card.Actions>
+        {renderActions(actions || [])}
+      </Card.Actions>
+      <Card.Content>
+        {renderBlobs(blobs)}
+      </Card.Content>
+    </Card>
+
+  )
 };
 
 export default ThreadComponent;

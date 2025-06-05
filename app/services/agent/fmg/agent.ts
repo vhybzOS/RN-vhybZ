@@ -1,5 +1,7 @@
-import { Content, FunctionCallingConfigMode, GenerateContentConfig, GoogleGenAI, createModelContent, createPartFromFunctionResponse } from "@google/genai";
+import { Content, FunctionCallingConfigMode, GenerateContentConfig, GoogleGenAI, createModelContent, createPartFromFunctionResponse, createUserContent } from "@google/genai";
 import { Agent, FocusFunction, ThreadItem, Tools } from "./types";
+import { fnMemory } from "./memory";
+import { retry } from "./retry";
 
 
 
@@ -51,10 +53,16 @@ export class GeminiAgent implements Agent {
       }
     }
 
-    const response = await this.genAI.models.generateContent({
+    const response = await retry(() => this.genAI!.models.generateContent({
       model: 'gemini-2.0-flash-001',
       contents: tdi.messages,
       config: gc,
+    }), {
+      retries: 5,
+      baseDelay: 200,
+      maxDelay: 5000,
+      timeout: 100000,
+      jitter: true
     })
     if (response.candidates && response.candidates.length > 0 && response.candidates[0].content) {
       tdi.messages.push(response.candidates[0].content)
@@ -64,12 +72,11 @@ export class GeminiAgent implements Agent {
       const func = this.tools?.functions[response.functionCalls[0].name]
       const args = response.functionCalls[0].args
       if (func !== undefined && args != undefined) {
-        console.log(response.functionCalls[0])
         let res = await func(args.prompt as string, this.genAI)
-        console.log("inside func call")
-        let c = createModelContent(createPartFromFunctionResponse(response.functionCalls[0].id || "", "createImage", { output: res }))
+        console.log(JSON.stringify(tdi.messages.at(-1)))
+        let c = createUserContent(createPartFromFunctionResponse(response.functionCalls[0].id!, response.functionCalls[0].name, { output: res }))
         tdi.messages.push(c)
-        return await this.complete([...ctx.slice(0, ctx.length - 1), tdi], focus)
+        return await this.complete([...ctx, tdi], fnMemory)
       }
     }
     return [...ctx, tdi]

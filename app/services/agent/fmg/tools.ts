@@ -22,13 +22,13 @@ async function createImageFn(prompt: string, genAI: GoogleGenAI): Promise<string
 const createImageDec: FunctionDeclaration =
 {
   name: 'createImage',
-  description: 'Create a base64 image from a prompt',
+  description: 'casting a UI/UX discribtion to visaul image conterpart knowing best of desgin system',
   parameters: {
     type: Type.OBJECT,
     properties: {
       prompt: {
         type: Type.STRING,
-        description: "Prompt to generate image"
+        description: "UI/UX describtion with details and color, size, feeling, desgin system"
       }
     }
   },
