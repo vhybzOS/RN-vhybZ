@@ -44,16 +44,9 @@ import {
   MD3LightTheme,
   adaptNavigationTheme,
 } from "react-native-paper"
-import {
-  addStateListener,
-  getScheme,
-  getShareExtensionKey,
-  hasShareIntent,
-  ShareIntentProvider,
-} from "expo-share-intent"
 import { getStateFromPath } from "@react-navigation/native"
 import { onSnapshot } from "mobx-state-tree"
-import { htmlGenerator } from "./services/agent"
+import { GraphProvider } from "./services/agent/GraphContext"
 export const NAVIGATION_PERSISTENCE_KEY = "NAVIGATION_STATE"
 
 const { LightTheme, DarkTheme } = adaptNavigationTheme({
@@ -130,15 +123,12 @@ function App(props: AppProps) {
     [colorScheme],
   )
 
-  const { rootStore, rehydrated } = useInitialRootStore(() => {
+  const { rootStore: { configStore: geminiApiKey }, rehydrated
+  } = useInitialRootStore(() => {
     // This runs after the root store has been initialized and rehydrated.
     // if (rootStore.authenticationStore.authToken && rootStore.authenticationStore.refreshToken && rehydrated) {
     //   api.setAccessToken(rootStore.authenticationStore.authToken, rootStore.authenticationStore.refreshToken)
     // }
-    htmlGenerator.setAPIKey(rootStore.configStore.geminiAPIKey)
-    onSnapshot(rootStore.configStore, (snapshot) => {
-      htmlGenerator.setAPIKey(snapshot.geminiAPIKey)
-    })
 
     // If your initialization scripts run very fast, it's good to show the splash screen for just a bit longer to prevent flicker.
     // Slightly delaying splash screen hiding for better UX; can be customized or removed as needed,
@@ -155,86 +145,26 @@ function App(props: AppProps) {
   // You can replace with your own loading component if you wish.
   if (!rehydrated || !isNavigationStateRestored || !areFontsLoaded) return null
 
-  const linking = {
-    prefixes: [`${Constants.expoConfig?.scheme}://`, `${PACKAGE_NAME}://`, PREFIX],
-    config,
-    getStateFromPath(path: string, config: any) {
-      // REQUIRED FOR iOS FIRST LAUNCH
-      if (path.includes(`dataUrl=${getShareExtensionKey()}`)) {
-        // redirect to the ShareIntent Screen to handle data with the hook
-        return {
-          routes: [
-            {
-              name: "TankhahSpendForm",
-            },
-          ],
-        }
-      }
-      return getStateFromPath(path, config)
-    },
-    subscribe(listener: (url: string) => void): undefined | void | (() => void) {
-      const onReceiveURL = ({ url }: { url: string }) => {
-        if (url.includes(getShareExtensionKey())) {
-          // REQUIRED FOR iOS WHEN APP IS IN BACKGROUND
-          listener(`${getScheme()}://spendform`)
-        } else {
-          listener(url)
-        }
-      }
-      const shareIntentEventSubscription = addStateListener((event) => {
-        // REQUIRED FOR ANDROID WHEN APP IS IN BACKGROUND
-        if (event.value === "pending") {
-          listener(`${getScheme()}://spendform`)
-        }
-      })
-      const urlEventSubscription = Linking.addEventListener("url", onReceiveURL)
-      return () => {
-        // Clean up the event listeners
-        shareIntentEventSubscription.remove()
-        urlEventSubscription.remove()
-      }
-    },
-    // https://reactnavigation.org/docs/deep-linking/#third-party-integrations
-    async getInitialURL() {
-      // REQUIRED FOR ANDROID FIRST LAUNCH
-      const needRedirect = hasShareIntent(getShareExtensionKey())
-      if (needRedirect) {
-        return `${Constants.expoConfig?.scheme}://spendform`
-      }
-      // As a fallback, do the default deep link handling
-      const url = await Linking.getInitialURL()
-      return url
-    },
-  }
 
   // otherwise, we're ready to render the app
   return (
-    <ShareIntentProvider
-      options={{
-        debug: false,
-        // @ts-ignore
-        onResetShareIntent: () => {
-          // navigationRef?.current?.navigate("AppTabs", { screen: "TankhahHome", params: {} })
-        },
-      }}
-    >
-      <RealmProvider {...realmConfig}>
-        <SafeAreaProvider initialMetrics={initialWindowMetrics}>
-          <ErrorBoundary catchErrors={Config.catchErrors}>
-            <GestureHandlerRootView style={$container}>
-              <PaperProvider theme={theme}>
+    <RealmProvider {...realmConfig}>
+      <SafeAreaProvider initialMetrics={initialWindowMetrics}>
+        <ErrorBoundary catchErrors={Config.catchErrors}>
+          <GestureHandlerRootView style={$container}>
+            <PaperProvider theme={theme}>
+              <GraphProvider apiKey={geminiApiKey.geminiAPIKey}>
                 <AppNavigator
                   theme={theme}
-                  linking={linking}
                   initialState={initialNavigationState}
                   onStateChange={onNavigationStateChange}
                 />
-              </PaperProvider>
-            </GestureHandlerRootView>
-          </ErrorBoundary>
-        </SafeAreaProvider>
-      </RealmProvider>
-    </ShareIntentProvider>
+              </GraphProvider>
+            </PaperProvider>
+          </GestureHandlerRootView>
+        </ErrorBoundary>
+      </SafeAreaProvider>
+    </RealmProvider>
   )
 }
 
